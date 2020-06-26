@@ -6,45 +6,65 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"github.com/tidwall/pretty"
+	"fmt"
+	"gocloud.dev/blob"
+	_ "gocloud.dev/blob/fileblob"	
 	"io"
 	"log"
-	"os"
 	"strings"
 )
 
+type Record struct {
+	Path       string
+	LineNumber int
+	Body       []byte
+}
+
+type Error struct {
+	Path       string
+	LineNumber int
+	Error error
+}
+
+func (e *Error) String() string {
+
+	return fmt.Sprintf("[%s] line %d, %v", e.Path, e.LineNumber, e.Error)
+}
+
 func main() {
 
+	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket URI.")
 	flag.Parse()
 
 	ctx := context.Background()
 
-	uris := flag.Args()
+	bucket, err := blob.OpenBucket(ctx, *bucket_uri)
 
-	writers := []io.Writer{
-		os.Stdout,
-		// ioutil.Discard,
+	if err != nil {
+		log.Fatalf("Failed to open bucket, %v", err)
 	}
 
-	wr := io.MultiWriter(writers...)
+	defer bucket.Close()
 
-	for _, uri := range uris {
+	record_ch := make(chan *Record)
+	error_ch := make(chan *Error)
+	done_ch := make(chan bool)
 
-		fh, err := os.Open(uri)
+	var crawlFunc func(context.Context, *blob.Bucket, string) error
 
-		if err != nil {
-			log.Fatal(err)
-		}
+	crawlFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
 
-		reader := bufio.NewReader(fh)
-
-		if strings.HasSuffix(uri, ".bz2") {
-			br := bufio.NewReader(fh)
-			cr := bzip2.NewReader(br)
-			reader = bufio.NewReader(cr)
-		}
-
-		lineno := 0
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			// pass
+		}			
+		
+		iter := bucket.List(&blob.ListOptions{
+			Delimiter: "/",
+			Prefix:    prefix,
+		})
 
 		for {
 
@@ -53,42 +73,175 @@ func main() {
 				break
 			default:
 				// pass
-			}
-
-			lineno += 1
-
-			ln, err := reader.ReadBytes('\n')
+			}			
+			
+			obj, err := iter.Next(ctx)
 
 			if err == io.EOF {
 				break
 			}
 
 			if err != nil {
-				log.Fatal(err)
+
+				e := &Error{
+					Path: prefix,
+					LineNumber: 0,
+					Error: err,					
+				}
+
+				error_ch <- e
+				return nil
 			}
 
-			var stub interface{}
-			err = json.Unmarshal(ln, &stub)
+			if obj.IsDir {
+
+				err = crawlFunc(ctx, bucket, obj.Key)
+
+				if err != nil {
+
+					e := &Error{
+						Path: obj.Key,
+						LineNumber: 0,
+						Error: err,
+					}
+					
+					error_ch <- e
+					return nil
+				}
+
+			}
+
+			// parse file of line-demilited records
+
+			// trailing slashes confuse Go Cloud...
+
+			path := strings.TrimRight(obj.Key, "/")
+			log.Println(path)
+
+			fh, err := bucket.NewReader(ctx, path, nil)
 
 			if err != nil {
-				log.Printf("Failed to parse JSON in %s at line %d, %v", uri, lineno, err)
-				continue
+				
+				
+				e := &Error{
+					Path: path,
+					LineNumber: 0,
+					Error: err,					
+				}
+				
+				error_ch <- e
+				return nil
 			}
 
-			enc, err := json.Marshal(stub)
+			reader := bufio.NewReader(fh)
 
-			if err != nil {
-				log.Fatal(err)
+			if strings.HasSuffix(path, ".bz2") {
+				br := bufio.NewReader(fh)
+				cr := bzip2.NewReader(br)
+				reader = bufio.NewReader(cr)
 			}
 
-			enc = pretty.Pretty(enc)
+			lineno := 0
 
-			_, err = wr.Write(enc)
+			for {
 
-			if err != nil {
-				log.Fatal(err)
+				select {
+				case <-ctx.Done():
+					break
+				default:
+					// pass
+				}
+
+				lineno += 1
+
+				body, err := reader.ReadBytes('\n')
+
+				if err == io.EOF {
+					break
+				}
+
+				if err != nil {
+
+					e := &Error{
+						Path: path,
+						LineNumber: lineno,
+						Error: err,						
+					}
+					
+					error_ch <- e
+					return nil
+				}
+
+				var stub interface{}
+				err = json.Unmarshal(body, &stub)
+
+				if err != nil {
+
+					e := &Error{
+						Path: path,
+						LineNumber: lineno,
+						Error: err,
+					}
+					
+					error_ch <- e
+					return nil
+				}
+
+				body, err = json.Marshal(stub)
+
+				if err != nil {
+
+					e := &Error{
+						Path: path,
+						LineNumber: lineno,
+						Error: err,						
+					}
+					
+					error_ch <- e
+					return nil
+				}
+
+				rec := &Record{
+					Path:       path,
+					LineNumber: lineno,
+					Body:       body,
+				}
+
+				record_ch <- rec
+				return nil
 			}
+		}
 
+		return nil
+	}
+
+	go func() {
+
+		for {
+			select {
+			case <-done_ch:
+				return
+			case err := <- error_ch:
+				log.Println(err)
+			case rec := <-record_ch:
+				log.Println(string(rec.Body))
+			default:
+				// pass
+
+			}
+		}
+	}()
+
+	uris := flag.Args()
+
+	for _, uri := range uris {
+
+		err := crawlFunc(ctx, bucket, uri)
+
+		if err != nil {
+			log.Fatalf("Failed to crawl %s, %v", uri, err)
 		}
 	}
+
+	done_ch <- true
 }
