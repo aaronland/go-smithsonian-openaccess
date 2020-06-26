@@ -1,6 +1,6 @@
-# openaccess-tools
+# go-smithsonian-openaccess
 
-Tools for working with the Smithsonian Open Access release
+Go package for working with the Smithsonian Open Access release
 
 ## Important
 
