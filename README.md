@@ -103,7 +103,7 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
   "title": "Tabby\u0027s Kittens"
 ```
 
-As of this writing the `emit` tools lacks any kind of inline querying or filtering but it's on the list of things to do soon.
+As of this writing the `emit` tools lacks any kind of inline querying or filtering but it's on the list of [things to do soon](https://github.com/aaronland/go-smithsonian-openaccess/issues/1).
 
 ## See also
 
