@@ -8,9 +8,9 @@ This is work in progress. Proper documentation to follow.
 
 ## Tools
 
-A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
-
 ### emit
+
+A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
 
 ```
 > go run -mod vendor cmd/emit/main.go -h
