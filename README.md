@@ -92,7 +92,8 @@ Or something similar by not emitting a JSON list but formatting each record (as 
 $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
    -format-json \
    -validate-json=false \
-   -stats metadata/objects/CHNDM \
+   -stats \
+   metadata/objects/CHNDM \
    | grep '"title"' \
    | grep -i 'kitten' \
    | sort
