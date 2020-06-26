@@ -8,12 +8,14 @@ This is work in progress. Proper documentation to follow.
 
 ## Tools
 
+A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
+
 ### emit
 
 ```
 > go run -mod vendor cmd/emit/main.go -h
   -bucket-uri string
-    	A valid GoCloud bucket URI.
+    	A valid GoCloud bucket file:/// URI.
   -format-json
     	Format JSON output for each record.
   -json
@@ -29,8 +31,6 @@ This is work in progress. Proper documentation to follow.
   -workers int
     	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
 ```
-
-A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
 
 For example:
 
