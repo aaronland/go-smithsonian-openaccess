@@ -108,3 +108,4 @@ As of this writing the `emit` tools lacks any kind of inline querying or filteri
 ## See also
 
 * https://github.com/Smithsonian/OpenAccess
+* https://gocloud.dev/howto/blob/
