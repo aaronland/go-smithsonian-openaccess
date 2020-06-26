@@ -35,14 +35,25 @@ A command-line tool for parsing and emitting individual records from a directory
 For example, processing every record in the OpenAccess dataset ensuring it is valid JSON and emitting it to `/dev/null`:
 
 ```
-> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -stdout=false -null -stats -workers 20 metadata/objects
+> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+  -stdout=false -null \
+  -stats \
+  -workers 20 \
+  metadata/objects
+
 2020/06/26 10:19:17 Processed 11620642 records in 12m1.141284159s
 ```
 
 Or processing everything in the [Air and Space](https://airandspace.si.edu/collections) collection as JSON, passing the result to the `jq` tool and searching for things with "space" in the title:
 
 ```
-go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -json metadata/objects/NASM/ | jq '.[]["title"]' | grep -i 'space' | sort
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   metadata/objects/NASM/ \
+   | jq '.[]["title"]' \
+   | grep -i 'space' \
+   | sort
+
 "Medal, NASA Space Flight, Sally Ride"
 "Medal, STS-7, Smithsonian National Air and Space Museum, Sally Ride"
 "Mirror, Primary Backup, Hubble Space Telescope"
@@ -62,7 +73,13 @@ go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -js
 Or doing the same, but for things about kittens in the [Cooper Hewitt](https://collection.cooperhewitt.org) collection:
 
 ```
-go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -json -stats metadata/objects/CHNDM/ | jq '.[]["title"]' | grep -i 'kitten' | sort
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   -stats \
+   metadata/objects/CHNDM/ \
+   | jq '.[]["title"]' \
+   | grep -i 'kitten' \
+   | sort
 
 2020/06/26 09:45:15 Processed 43695 records in 4.175884858s
 "Cat and kitten"
@@ -72,11 +89,20 @@ go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -js
 Or something similar by not emitting a JSON list but formatting each record (as JSON) and filtering for the words "title" and "kitten":
 
 ```
-go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess -json -format-json -validate-json=false -stats metadata/objects/CHNDM | grep '"title"' | grep -i 'kitten' | sort
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -format-json \
+   -validate-json=false \
+   -stats metadata/objects/CHNDM \
+   | grep '"title"' \
+   | grep -i 'kitten' \
+   | sort
+   
 2020/06/26 10:02:59 Processed 43695 records in 5.045081835s
   "title": "Cat and kitten"
   "title": "Tabby\u0027s Kittens"
 ```
+
+As of this writing the `emit` tools lacks any kind of inline querying or filtering but it's on the list of things to do soon.
 
 ## See also
 
