@@ -8,6 +8,8 @@ github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
 # github.com/googleapis/gax-go v2.0.2+incompatible
 github.com/googleapis/gax-go
+# github.com/tidwall/pretty v1.0.1
+github.com/tidwall/pretty
 # go.opencensus.io v0.22.3
 go.opencensus.io
 go.opencensus.io/internal

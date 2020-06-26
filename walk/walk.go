@@ -6,10 +6,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/tidwall/pretty"
 	"gocloud.dev/blob"
 	"io"
+	_ "log"
 	"strings"
+	"sync"
 )
+
+type WalkOptions struct {
+	URI           string
+	Workers       int
+	RecordChannel chan *WalkRecord
+	ErrorChannel  chan *WalkError
+	Validate      bool
+	Format        bool
+}
 
 type WalkRecord struct {
 	Path       string
@@ -32,7 +44,20 @@ func (e *WalkError) String() string {
 	return fmt.Sprintf("[%s] line %d, %v", e.Path, e.LineNumber, e.Err)
 }
 
-func Walk(ctx context.Context, bucket *blob.Bucket, uri string, record_ch chan *WalkRecord, error_ch chan *WalkError) error {
+func Walk(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions) error {
+
+	record_ch := opts.RecordChannel
+	error_ch := opts.ErrorChannel
+
+	workers := opts.Workers
+
+	throttle := make(chan bool, workers)
+
+	for i := 0; i < workers; i++ {
+		throttle <- true
+	}
+
+	wg := new(sync.WaitGroup)
 
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
@@ -90,9 +115,9 @@ func Walk(ctx context.Context, bucket *blob.Bucket, uri string, record_ch chan *
 					}
 
 					error_ch <- e
-					continue
 				}
 
+				continue
 			}
 
 			// parse file of line-demilited records
@@ -101,102 +126,127 @@ func Walk(ctx context.Context, bucket *blob.Bucket, uri string, record_ch chan *
 
 			path := strings.TrimRight(obj.Key, "/")
 
-			fh, err := bucket.NewReader(ctx, path, nil)
+			go func(path string) {
 
-			if err != nil {
+				// log.Println("WAIT", path)
+				<-throttle
 
-				e := &WalkError{
-					Path:       path,
-					LineNumber: 0,
-					Err:        err,
-				}
+				wg.Add(1)
 
-				error_ch <- e
-				continue
-			}
+				defer func() {
+					// log.Println("CLOSE", path)
+					wg.Done()
+					throttle <- true
+				}()
 
-			defer fh.Close()
-
-			reader := bufio.NewReader(fh)
-
-			if strings.HasSuffix(path, ".bz2") {
-				br := bufio.NewReader(fh)
-				cr := bzip2.NewReader(br)
-				reader = bufio.NewReader(cr)
-			}
-
-			lineno := 0
-
-			for {
-
-				select {
-				case <-ctx.Done():
-					break
-				default:
-					// pass
-				}
-
-				lineno += 1
-
-				body, err := reader.ReadBytes('\n')
-
-				if err == io.EOF {
-					break
-				}
+				// log.Println("OPEN", path)
+				fh, err := bucket.NewReader(ctx, path, nil)
 
 				if err != nil {
 
 					e := &WalkError{
 						Path:       path,
-						LineNumber: lineno,
+						LineNumber: 0,
 						Err:        err,
 					}
 
 					error_ch <- e
-					continue
+					return
 				}
 
-				var stub interface{}
-				err = json.Unmarshal(body, &stub)
+				defer fh.Close()
 
-				if err != nil {
+				reader := bufio.NewReader(fh)
 
-					e := &WalkError{
+				if strings.HasSuffix(path, ".bz2") {
+					br := bufio.NewReader(fh)
+					cr := bzip2.NewReader(br)
+					reader = bufio.NewReader(cr)
+				}
+
+				lineno := 0
+
+				for {
+
+					select {
+					case <-ctx.Done():
+						break
+					default:
+						// pass
+					}
+
+					lineno += 1
+
+					body, err := reader.ReadBytes('\n')
+
+					if err == io.EOF {
+						break
+					}
+
+					if err != nil {
+
+						e := &WalkError{
+							Path:       path,
+							LineNumber: lineno,
+							Err:        err,
+						}
+
+						error_ch <- e
+						continue
+					}
+
+					if opts.Validate {
+						var stub interface{}
+						err = json.Unmarshal(body, &stub)
+
+						if err != nil {
+
+							e := &WalkError{
+								Path:       path,
+								LineNumber: lineno,
+								Err:        err,
+							}
+
+							error_ch <- e
+							continue
+						}
+
+						body, err = json.Marshal(stub)
+
+						if err != nil {
+
+							e := &WalkError{
+								Path:       path,
+								LineNumber: lineno,
+								Err:        err,
+							}
+
+							error_ch <- e
+							continue
+						}
+					}
+
+					if opts.Format {
+						body = pretty.Pretty(body)
+					}
+
+					rec := &WalkRecord{
 						Path:       path,
 						LineNumber: lineno,
-						Err:        err,
+						Body:       body,
 					}
 
-					error_ch <- e
-					continue
+					record_ch <- rec
 				}
+			}(path)
 
-				body, err = json.Marshal(stub)
-
-				if err != nil {
-
-					e := &WalkError{
-						Path:       path,
-						LineNumber: lineno,
-						Err:        err,
-					}
-
-					error_ch <- e
-					continue
-				}
-
-				rec := &WalkRecord{
-					Path:       path,
-					LineNumber: lineno,
-					Body:       body,
-				}
-
-				record_ch <- rec
-			}
 		}
 
 		return nil
 	}
 
-	return walkFunc(ctx, bucket, uri)
+	walkFunc(ctx, bucket, opts.URI)
+	wg.Wait()
+
+	return nil
 }

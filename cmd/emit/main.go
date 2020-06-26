@@ -11,16 +11,22 @@ import (
 	"log"
 	"os"
 	"sync/atomic"
+	"time"
 )
 
 func main() {
 
 	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket URI.")
+	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
 
 	to_stdout := flag.Bool("stdout", true, "Emit to STDOUT")
 	to_devnull := flag.Bool("null", false, "Emit to /dev/null")
 
-	as_json := flag.Bool("json", false, "Emit a JSON list")
+	as_json := flag.Bool("json", false, "Emit a JSON list.")
+	validate_json := flag.Bool("validate-json", true, "Ensure each record is valid JSON.")
+	format_json := flag.Bool("format-json", false, "Format JSON output for each record.")
+
+	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
 	flag.Parse()
 
@@ -60,6 +66,17 @@ func main() {
 	error_ch := make(chan *walk.WalkError)
 	done_ch := make(chan bool)
 
+	if *stats {
+
+		t1 := time.Now()
+
+		defer func() {
+
+			final_count := atomic.LoadUint32(&count)
+			log.Printf("Processed %d records in %v\n", final_count, time.Since(t1))
+		}()
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -92,7 +109,16 @@ func main() {
 
 	for _, uri := range uris {
 
-		err := walk.Walk(ctx, bucket, uri, record_ch, error_ch)
+		opts := &walk.WalkOptions{
+			URI:           uri,
+			Workers:       *workers,
+			RecordChannel: record_ch,
+			ErrorChannel:  error_ch,
+			Format:        *format_json,
+			Validate:      *validate_json,
+		}
+
+		err := walk.Walk(ctx, bucket, opts)
 
 		if err != nil {
 			log.Fatalf("Failed to crawl %s, %v", uri, err)
