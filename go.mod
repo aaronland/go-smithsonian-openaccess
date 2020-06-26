@@ -1,4 +1,4 @@
-module github.com/aaronland/openacccess-tools
+module github.com/aaronland/go-smithsonian-openaccess
 
 go 1.12
 
