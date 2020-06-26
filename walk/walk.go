@@ -16,8 +16,8 @@ import (
 	"sync"
 )
 
-const QUERYSET_MODE_ANY int = 0
-const QUERYSET_MODE_ALL int = 1
+const QUERYSET_MODE_ANY string = "ANY"
+const QUERYSET_MODE_ALL string = "ALL"
 
 type WalkOptions struct {
 	URI           string
@@ -31,7 +31,7 @@ type WalkOptions struct {
 
 type WalkQuerySet struct {
 	Queries []*WalkQuery
-	Mode    int
+	Mode    string
 }
 
 type WalkQuery struct {

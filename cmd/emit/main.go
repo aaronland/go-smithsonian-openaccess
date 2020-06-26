@@ -28,6 +28,11 @@ func main() {
 
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
+	var queries walk.WalkQueryFlags
+	flag.Var(&queries, "query", "...")
+
+	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, "...")
+
 	flag.Parse()
 
 	ctx := context.Background()
@@ -116,6 +121,16 @@ func main() {
 			ErrorChannel:  error_ch,
 			Format:        *format_json,
 			Validate:      *validate_json,
+		}
+
+		if len(queries) > 0 {
+
+			qs := &walk.WalkQuerySet{
+				Queries: queries,
+				Mode:    *query_mode,
+			}
+
+			opts.QuerySet = qs
 		}
 
 		err := walk.Walk(ctx, bucket, opts)
