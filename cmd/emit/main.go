@@ -16,7 +16,7 @@ import (
 
 func main() {
 
-	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket file:/// URI.")
+	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket file:// URI.")
 	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
 
 	to_stdout := flag.Bool("stdout", true, "Emit to STDOUT")

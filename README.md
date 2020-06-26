@@ -15,7 +15,7 @@ A command-line tool for parsing and emitting individual records from a directory
 ```
 > go run -mod vendor cmd/emit/main.go -h
   -bucket-uri string
-    	A valid GoCloud bucket file:/// URI.
+    	A valid GoCloud bucket file:// URI.
   -format-json
     	Format JSON output for each record.
   -json
