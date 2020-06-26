@@ -6,13 +6,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"gocloud.dev/blob"
 	"io"
 	_ "log"
+	"regexp"
 	"strings"
 	"sync"
 )
+
+const QUERYSET_MODE_ANY int = 0
+const QUERYSET_MODE_ALL int = 1
 
 type WalkOptions struct {
 	URI           string
@@ -21,6 +26,17 @@ type WalkOptions struct {
 	ErrorChannel  chan *WalkError
 	Validate      bool
 	Format        bool
+	QuerySet      *WalkQuerySet
+}
+
+type WalkQuerySet struct {
+	Queries []*WalkQuery
+	Mode    int
+}
+
+type WalkQuery struct {
+	Path  string
+	Match *regexp.Regexp
 }
 
 type WalkRecord struct {
@@ -40,13 +56,11 @@ func (e *WalkError) Error() string {
 }
 
 func (e *WalkError) String() string {
-
 	return fmt.Sprintf("[%s] line %d, %v", e.Path, e.LineNumber, e.Err)
 }
 
 func Walk(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions) error {
 
-	record_ch := opts.RecordChannel
 	error_ch := opts.ErrorChannel
 
 	workers := opts.Workers
@@ -139,107 +153,9 @@ func Walk(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions) error {
 					throttle <- true
 				}()
 
-				// log.Println("OPEN", path)
-				fh, err := bucket.NewReader(ctx, path, nil)
+				WalkFile(ctx, bucket, opts, path)
 
-				if err != nil {
-
-					e := &WalkError{
-						Path:       path,
-						LineNumber: 0,
-						Err:        err,
-					}
-
-					error_ch <- e
-					return
-				}
-
-				defer fh.Close()
-
-				reader := bufio.NewReader(fh)
-
-				if strings.HasSuffix(path, ".bz2") {
-					br := bufio.NewReader(fh)
-					cr := bzip2.NewReader(br)
-					reader = bufio.NewReader(cr)
-				}
-
-				lineno := 0
-
-				for {
-
-					select {
-					case <-ctx.Done():
-						break
-					default:
-						// pass
-					}
-
-					lineno += 1
-
-					body, err := reader.ReadBytes('\n')
-
-					if err == io.EOF {
-						break
-					}
-
-					if err != nil {
-
-						e := &WalkError{
-							Path:       path,
-							LineNumber: lineno,
-							Err:        err,
-						}
-
-						error_ch <- e
-						continue
-					}
-
-					if opts.Validate {
-						var stub interface{}
-						err = json.Unmarshal(body, &stub)
-
-						if err != nil {
-
-							e := &WalkError{
-								Path:       path,
-								LineNumber: lineno,
-								Err:        err,
-							}
-
-							error_ch <- e
-							continue
-						}
-
-						body, err = json.Marshal(stub)
-
-						if err != nil {
-
-							e := &WalkError{
-								Path:       path,
-								LineNumber: lineno,
-								Err:        err,
-							}
-
-							error_ch <- e
-							continue
-						}
-					}
-
-					if opts.Format {
-						body = pretty.Pretty(body)
-					}
-
-					rec := &WalkRecord{
-						Path:       path,
-						LineNumber: lineno,
-						Body:       body,
-					}
-
-					record_ch <- rec
-				}
 			}(path)
-
 		}
 
 		return nil
@@ -249,4 +165,160 @@ func Walk(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions) error {
 	wg.Wait()
 
 	return nil
+}
+
+func WalkFile(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions, path string) {
+
+	record_ch := opts.RecordChannel
+	error_ch := opts.ErrorChannel
+
+	fh, err := bucket.NewReader(ctx, path, nil)
+
+	if err != nil {
+
+		e := &WalkError{
+			Path:       path,
+			LineNumber: 0,
+			Err:        err,
+		}
+
+		error_ch <- e
+		return
+	}
+
+	defer fh.Close()
+
+	reader := bufio.NewReader(fh)
+
+	if strings.HasSuffix(path, ".bz2") {
+		br := bufio.NewReader(fh)
+		cr := bzip2.NewReader(br)
+		reader = bufio.NewReader(cr)
+	}
+
+	lineno := 0
+
+	for {
+
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			// pass
+		}
+
+		lineno += 1
+
+		body, err := reader.ReadBytes('\n')
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+
+			e := &WalkError{
+				Path:       path,
+				LineNumber: lineno,
+				Err:        err,
+			}
+
+			error_ch <- e
+			continue
+		}
+
+		if opts.Validate {
+
+			var stub interface{}
+			err = json.Unmarshal(body, &stub)
+
+			if err != nil {
+
+				e := &WalkError{
+					Path:       path,
+					LineNumber: lineno,
+					Err:        err,
+				}
+
+				error_ch <- e
+				continue
+			}
+
+			body, err = json.Marshal(stub)
+
+			if err != nil {
+
+				e := &WalkError{
+					Path:       path,
+					LineNumber: lineno,
+					Err:        err,
+				}
+
+				error_ch <- e
+				continue
+			}
+		}
+
+		if opts.QuerySet != nil {
+
+			queries := opts.QuerySet.Queries
+			mode := opts.QuerySet.Mode
+
+			tests := len(queries)
+			matches := 0
+
+			for _, q := range queries {
+
+				rsp := gjson.GetBytes(body, q.Path)
+
+				if !rsp.Exists() {
+
+					if mode == QUERYSET_MODE_ALL {
+						break
+					}
+				}
+
+				for _, r := range rsp.Array() {
+
+					has_match := true
+
+					if !q.Match.MatchString(r.String()) {
+
+						if mode == QUERYSET_MODE_ALL {
+							has_match = false
+							break
+						}
+					}
+
+					if !has_match {
+
+						if mode == QUERYSET_MODE_ALL {
+							break
+						}
+
+						continue
+					}
+
+					matches += 1
+				}
+			}
+
+			if matches < tests {
+				continue
+			}
+		}
+
+		if opts.Format {
+			body = pretty.Pretty(body)
+		}
+
+		rec := &WalkRecord{
+			Path:       path,
+			LineNumber: lineno,
+			Body:       body,
+		}
+
+		record_ch <- rec
+	}
+
 }
