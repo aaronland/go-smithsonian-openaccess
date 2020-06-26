@@ -70,7 +70,7 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 "Suit, SpaceShipOne, Mike Melvill"
 ```
 
-Or doing the same, but for things about kittens in the [Cooper Hewitt](https://collection.cooperhewitt.org) collection:
+Or doing the same, but for [things about kittens](https://collection.cooperhewitt.org/objects/18382391/) in the [Cooper Hewitt](https://collection.cooperhewitt.org) collection:
 
 ```
 $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
