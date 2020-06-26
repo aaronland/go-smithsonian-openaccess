@@ -36,7 +36,8 @@ For example, processing every record in the OpenAccess dataset ensuring it is va
 
 ```
 > go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
-  -stdout=false -null \
+  -stdout=false \
+  -null \
   -stats \
   -workers 20 \
   metadata/objects
