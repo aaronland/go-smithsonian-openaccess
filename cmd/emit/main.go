@@ -29,9 +29,12 @@ func main() {
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
 	var queries walk.WalkQueryFlags
-	flag.Var(&queries, "query", "...")
+	flag.Var(&queries, "query", "One or more {PATH}={REGEXP} parameters for filtering records.")
 
-	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, "...")
+	//valid_modes := strings.Join([]string{ walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY })
+	//desc_modes := "
+
+	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, "")
 
 	flag.Parse()
 

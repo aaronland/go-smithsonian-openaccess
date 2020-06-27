@@ -104,8 +104,67 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
   "title": "Tabby\u0027s Kittens"
 ```
 
-As of this writing the `emit` tools lacks any kind of inline querying or filtering but it's on the list of [things to do soon](https://github.com/aaronland/go-smithsonian-openaccess/issues/1).
+You can also specify inline queries by passing a `-query` parameter which is a string in the format of:
 
+```
+{PATH}={REGULAR EXPRESSION}
+```
+
+Paths follow the dot notation syntax used by the [tidwall/gjson](https://github.com/tidwall/gjson) package and regular expressions are any valid [Go language regular expression](https://golang.org/pkg/regexp/).
+
+Successful path looks will be treated as a list of candidates and each candidate's string value will be tested against the regular expression's [MatchString](https://golang.org/pkg/regexp/#Regexp.MatchString) method.
+
+For example:
+
+```
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   -query 'title=cats?\s+' \
+   metadata/objects/CHNDM \
+   | jq '.[]["title"]'
+   
+"View of Moat Mountain from Wildcat Brook, Jackson, New Hampshire, Looking Southwest"
+"Near Falls of Wildcat Brook, Jackson, New Hampshire"
+```
+
+You can pass multiple `-query` parameters:
+
+```
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   -query 'title=cats?\s+' \
+   -query 'title=(?i)^view' \
+   metadata/objects/CHNDM \
+   | jq '.[]["title"]'
+   
+"View of Moat Mountain from Wildcat Brook, Jackson, New Hampshire, Looking Southwest"
+```
+
+The default query mode is to ensure that all queries match but you can also specify that only one or more queries need to match by passing the `-query-mode ANY` flag:
+
+```
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   -query 'title=cats?\s+' \
+   -query 'title=(?i)^view' \
+   -query-mode ANY \
+   metadata/objects/CHNDM \
+   | jq '.[]["title"]'
+   
+"View of Santi Giovanni e Paolo a Celio, Rome"
+"View of a Morning Room Interior"
+"View of the Louvre from the River"
+"View of the Acropolis, Athens"
+"View of Santi Giovanni e Paolo a Celio, Rome"
+"Views Representing the Most Considerable Transactions in the Siege of a Place, from Twelve of the Most REmarkable Sieges and Battles in Europe"
+"View of Shiba Coast (Shibaura no fukei) From the Series One Hundred Famous views of Edo"
+"View of Florence, Plate from \"Scelta di XXIV Vedute delle principali contrade, piazze, chiese, e palazzi della Città di Firenze\""
+"View of Venice, Italy"
+"View Across a River"
+"View of the Canadian Falls and Goat Island"
+
+...and so on
+```
 ## See also
 
 * https://github.com/Smithsonian/OpenAccess

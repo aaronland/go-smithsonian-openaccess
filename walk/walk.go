@@ -284,8 +284,9 @@ func WalkFile(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions, path 
 
 					if !q.Match.MatchString(r.String()) {
 
+						has_match = false
+
 						if mode == QUERYSET_MODE_ALL {
-							has_match = false
 							break
 						}
 					}
@@ -303,7 +304,14 @@ func WalkFile(ctx context.Context, bucket *blob.Bucket, opts *WalkOptions, path 
 				}
 			}
 
-			if matches < tests {
+			if mode == QUERYSET_MODE_ALL {
+
+				if matches < tests {
+					continue
+				}
+			}
+
+			if matches == 0 {
 				continue
 			}
 		}
