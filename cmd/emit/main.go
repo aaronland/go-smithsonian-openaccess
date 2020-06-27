@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
@@ -10,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -23,7 +25,7 @@ func main() {
 	to_devnull := flag.Bool("null", false, "Emit to /dev/null")
 
 	as_json := flag.Bool("json", false, "Emit a JSON list.")
-	validate_json := flag.Bool("validate-json", true, "Ensure each record is valid JSON.")
+	validate_json := flag.Bool("validate-json", false, "Ensure each record is valid JSON.")
 	format_json := flag.Bool("format-json", false, "Format JSON output for each record.")
 
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
@@ -31,10 +33,10 @@ func main() {
 	var queries walk.WalkQueryFlags
 	flag.Var(&queries, "query", "One or more {PATH}={REGEXP} parameters for filtering records.")
 
-	//valid_modes := strings.Join([]string{ walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY })
-	//desc_modes := "
+	valid_modes := strings.Join([]string{ walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY }, ", ")
+	desc_modes := fmt.Sprintf("Specify how query filtering should be evaluated. Valid modes are: %s", valid_modes)
 
-	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, "")
+	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, desc_modes)
 
 	flag.Parse()
 

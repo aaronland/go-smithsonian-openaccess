@@ -1,0 +1,151 @@
+{
+    "content": {
+        "descriptiveNonRepeating": {
+            "data_source": "Cooper Hewitt, Smithsonian Design Museum",
+            "guid": "http://n2t.net/ark:/65665/kq4c36db6e4-94dc-4820-8cd4-03bc91752157",
+            "metadata_usage": {
+                "access": "CC0"
+            },
+            "online_media": {
+                "media": [
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=CHSDM-E0207E65ACA82-000001",
+                        "guid": "http://n2t.net/ark:/65665/vc9fd5f62e8-0400-4cfe-ab2f-6edf592fa86e",
+                        "idsId": "CHSDM-E0207E65ACA82-000001",
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=CHSDM-E0207E65ACA82-000001",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    }
+                ],
+                "mediaCount": 1
+            },
+            "record_ID": "chndm_1931-66-88",
+            "record_link": "http://collection.cooperhewitt.org/view/objects/asitem/id/48147",
+            "title": {
+                "content": "Cathedral of Notre Dame in Paris",
+                "label": "Title"
+            },
+            "title_sort": "CATHEDRAL OF NOTRE DAME IN PARIS",
+            "unit_code": "CHNDM"
+        },
+        "freetext": {
+            "creditLine": [
+                {
+                    "content": "Gift of Sarah Cooper Hewitt",
+                    "label": "Credit Line"
+                }
+            ],
+            "dataSource": [
+                {
+                    "content": "Cooper Hewitt, Smithsonian Design Museum",
+                    "label": "Data Source"
+                }
+            ],
+            "date": [
+                {
+                    "content": "1825\u20131840",
+                    "label": "Date"
+                }
+            ],
+            "identifier": [
+                {
+                    "content": "1931-66-88",
+                    "label": "Accession Number"
+                }
+            ],
+            "name": [
+                {
+                    "content": "Charles Nicolas Ransonnette, French, 1793 - 1877",
+                    "label": "Artist"
+                }
+            ],
+            "notes": [
+                {
+                    "content": "Research in Progress",
+                    "label": "Catalogue Status"
+                },
+                {
+                    "content": "View from the east transept toward the towers of the fa\u00e7ade.",
+                    "label": "Description"
+                }
+            ],
+            "objectRights": [
+                {
+                    "content": "CC0",
+                    "label": "Restrictions & Rights"
+                }
+            ],
+            "objectType": [
+                {
+                    "content": "Drawing",
+                    "label": "Object Name"
+                },
+                {
+                    "content": "Drawing",
+                    "label": "Type"
+                }
+            ],
+            "physicalDescription": [
+                {
+                    "content": "Graphite, black crayon on two pieces of paper pasted together",
+                    "label": "Medium"
+                }
+            ],
+            "place": [
+                {
+                    "content": "France",
+                    "label": "made in"
+                }
+            ],
+            "setName": [
+                {
+                    "content": "Cooper Hewitt, Smithsonian Design Museum Collection",
+                    "label": "See more items in"
+                },
+                {
+                    "content": "Drawings, Prints, and Graphic Design Department",
+                    "label": "See more items in"
+                }
+            ]
+        },
+        "indexedStructured": {
+            "date": [
+                "1820s",
+                "1840s"
+            ],
+            "geoLocation": [
+                {
+                    "L2": {
+                        "content": "France",
+                        "type": "Country"
+                    }
+                }
+            ],
+            "name": [
+                "Ransonnette, Charles Nicolas"
+            ],
+            "object_type": [
+                "Drawings"
+            ],
+            "online_media_type": [
+                "Images"
+            ],
+            "place": [
+                "France"
+            ]
+        }
+    },
+    "docSignature": "eca4a992d085853c750994e1f8a1975f27aed00a_212607d3d7fbcfc29da7c64bcb66dde9",
+    "hash": "0082e20da0deec03aa2e3c77958a0bcada02743c",
+    "id": "edanmdm-chndm_1931-66-88",
+    "lastTimeUpdated": 1586592703,
+    "linkedId": "0",
+    "timestamp": 1586592772,
+    "title": "Cathedral of Notre Dame in Paris",
+    "type": "edanmdm",
+    "unitCode": "CHNDM",
+    "url": "edanmdm:chndm_1931-66-88",
+    "version": ""
+}
