@@ -111,6 +111,8 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
   "title": "Tabby\u0027s Kittens"
 ```
 
+#### Inline queries
+
 You can also specify inline queries by passing a `-query` parameter which is a string in the format of:
 
 ```
