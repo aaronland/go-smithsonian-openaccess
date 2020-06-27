@@ -33,7 +33,7 @@ func main() {
 	var queries walk.WalkQueryFlags
 	flag.Var(&queries, "query", "One or more {PATH}={REGEXP} parameters for filtering records.")
 
-	valid_modes := strings.Join([]string{ walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY }, ", ")
+	valid_modes := strings.Join([]string{walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY}, ", ")
 	desc_modes := fmt.Sprintf("Specify how query filtering should be evaluated. Valid modes are: %s", valid_modes)
 
 	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, desc_modes)
