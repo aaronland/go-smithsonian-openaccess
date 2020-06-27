@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-smithsonian-openaccess/walk"
+	"github.com/aaronland/go-jsonl/walk"
+	"github.com/aaronland/go-smithsonian-openaccess/edan"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
 	"io"
@@ -100,13 +102,30 @@ func main() {
 				log.Println(err)
 			case rec := <-record_ch:
 
-				new_count := atomic.AddUint32(&count, 1)
+				var object *edan.OpenAccessRecord
 
-				if *as_json && new_count > 1 {
-					wr.Write([]byte(","))
+				err := json.Unmarshal(rec.Body, &object)
+
+				if err != nil {
+
+					error_ch <- &walk.WalkError{
+						Path:       rec.Path,
+						LineNumber: rec.LineNumber,
+						Err:        err,
+					}
+
+				} else {
+
+					log.Println(object.Id, object.Content.DescriptiveNonRepeating.GUID)
+
+					new_count := atomic.AddUint32(&count, 1)
+
+					if *as_json && new_count > 1 {
+						wr.Write([]byte(","))
+					}
+
+					wr.Write(rec.Body)
 				}
-
-				wr.Write(rec.Body)
 
 			default:
 				// pass
