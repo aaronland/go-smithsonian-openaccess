@@ -253,3 +253,4 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 
 * https://github.com/Smithsonian/OpenAccess
 * https://gocloud.dev/howto/blob/
+* https://github.com/aaronland/go-jsonl/

@@ -69,6 +69,10 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20191009163259-e802c2cb94ae/go.mod h1:mjwGPas4yKduTyubHvD1Atl9r1rUq8DfVy+gkVvZ+oo=
 github.com/aaronland/go-jsonl v0.0.0-20200627232230-79cdf6854da2 h1:7kvnfCkK56jo3W0RBnnDKoC0bMYWsTcR9qNIDEO8LN0=
 github.com/aaronland/go-jsonl v0.0.0-20200627232230-79cdf6854da2/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
+github.com/aaronland/go-jsonl v0.0.0-20200627235310-38b8587e3ecf h1:LbHBceFv43b0jk2unvuTPAdWjeDvOgTW/Cht/1/tHyA=
+github.com/aaronland/go-jsonl v0.0.0-20200627235310-38b8587e3ecf/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
+github.com/aaronland/go-jsonl v0.0.1 h1:Hi7PLbSiM+HLAxRfRGNRerEzSiv//ji9mc9RJO2C0JM=
+github.com/aaronland/go-jsonl v0.0.1/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/openaccess-tools v0.0.0-20200625181341-806c2252b4b4 h1:/ezjpzL5jx77o8TzF0qIwGIkNNR10IGcXrwWhxZX12Y=
 github.com/aws/aws-sdk-go v1.15.27/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
 github.com/aws/aws-sdk-go v1.19.18/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=

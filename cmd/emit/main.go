@@ -116,7 +116,7 @@ func main() {
 
 				} else {
 
-					log.Println(object.Id, object.Content.DescriptiveNonRepeating.GUID)
+					// log.Println(object.Id, object.Content.DescriptiveNonRepeating.GUID)
 
 					new_count := atomic.AddUint32(&count, 1)
 
@@ -157,7 +157,7 @@ func main() {
 			opts.QuerySet = qs
 		}
 
-		err := walk.Walk(ctx, bucket, opts)
+		err := walk.WalkBucket(ctx, opts, bucket)
 
 		if err != nil {
 			log.Fatalf("Failed to crawl %s, %v", uri, err)
