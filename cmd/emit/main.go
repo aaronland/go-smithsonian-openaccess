@@ -92,6 +92,26 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	cb := func(ctx context.Context, rec *walk.WalkRecord) error {
+
+		var object *edan.OpenAccessRecord
+
+		err := json.Unmarshal(rec.Body, &object)
+
+		if err != nil {
+			return err
+		}
+
+		new_count := atomic.AddUint32(&count, 1)
+
+		if *as_json && new_count > 1 {
+			wr.Write([]byte(","))
+		}
+
+		wr.Write(rec.Body)
+		return nil
+	}
+
 	go func() {
 
 		for {
@@ -102,29 +122,14 @@ func main() {
 				log.Println(err)
 			case rec := <-record_ch:
 
-				var object *edan.OpenAccessRecord
-
-				err := json.Unmarshal(rec.Body, &object)
+				err := cb(ctx, rec)
 
 				if err != nil {
-
 					error_ch <- &walk.WalkError{
 						Path:       rec.Path,
 						LineNumber: rec.LineNumber,
 						Err:        err,
 					}
-
-				} else {
-
-					// log.Println(object.Id, object.Content.DescriptiveNonRepeating.GUID)
-
-					new_count := atomic.AddUint32(&count, 1)
-
-					if *as_json && new_count > 1 {
-						wr.Write([]byte(","))
-					}
-
-					wr.Write(rec.Body)
 				}
 
 			default:
