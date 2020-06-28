@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-jsonl/walk"
+	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess/edan"
+	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
 	"io"
@@ -32,13 +33,13 @@ func main() {
 
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
-	var queries walk.WalkQueryFlags
+	var queries jw.WalkQueryFlags
 	flag.Var(&queries, "query", "One or more {PATH}={REGEXP} parameters for filtering records.")
 
-	valid_modes := strings.Join([]string{walk.QUERYSET_MODE_ALL, walk.QUERYSET_MODE_ANY}, ", ")
+	valid_modes := strings.Join([]string{jw.QUERYSET_MODE_ALL, jw.QUERYSET_MODE_ANY}, ", ")
 	desc_modes := fmt.Sprintf("Specify how query filtering should be evaluated. Valid modes are: %s", valid_modes)
 
-	query_mode := flag.String("query-mode", walk.QUERYSET_MODE_ALL, desc_modes)
+	query_mode := flag.String("query-mode", jw.QUERYSET_MODE_ALL, desc_modes)
 
 	flag.Parse()
 
@@ -74,10 +75,6 @@ func main() {
 
 	count := uint32(0)
 
-	record_ch := make(chan *walk.WalkRecord)
-	error_ch := make(chan *walk.WalkError)
-	done_ch := make(chan bool)
-
 	if *stats {
 
 		t1 := time.Now()
@@ -92,7 +89,7 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	cb := func(ctx context.Context, rec *walk.WalkRecord) error {
+	cb := func(ctx context.Context, rec *jw.WalkRecord) error {
 
 		var object *edan.OpenAccessRecord
 
@@ -112,49 +109,23 @@ func main() {
 		return nil
 	}
 
-	go func() {
-
-		for {
-			select {
-			case <-done_ch:
-				return
-			case err := <-error_ch:
-				log.Println(err)
-			case rec := <-record_ch:
-
-				err := cb(ctx, rec)
-
-				if err != nil {
-					error_ch <- &walk.WalkError{
-						Path:       rec.Path,
-						LineNumber: rec.LineNumber,
-						Err:        err,
-					}
-				}
-
-			default:
-				// pass
-
-			}
-		}
-	}()
-
 	uris := flag.Args()
 
 	for _, uri := range uris {
 
 		opts := &walk.WalkOptions{
-			URI:           uri,
-			Workers:       *workers,
-			RecordChannel: record_ch,
-			ErrorChannel:  error_ch,
-			Format:        *format_json,
-			Validate:      *validate_json,
+			URI:     uri,
+			Workers: *workers,
+			// RecordChannel: record_ch,
+			// ErrorChannel:  error_ch,
+			Format:   *format_json,
+			Validate: *validate_json,
+			Callback: cb,
 		}
 
 		if len(queries) > 0 {
 
-			qs := &walk.WalkQuerySet{
+			qs := &jw.WalkQuerySet{
 				Queries: queries,
 				Mode:    *query_mode,
 			}
@@ -168,8 +139,6 @@ func main() {
 			log.Fatalf("Failed to crawl %s, %v", uri, err)
 		}
 	}
-
-	done_ch <- true
 
 	if *as_json {
 		wr.Write([]byte("]"))
