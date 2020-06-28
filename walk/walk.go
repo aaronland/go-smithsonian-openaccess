@@ -4,29 +4,25 @@ import (
 	"context"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"gocloud.dev/blob"
-	"log"
-	"sync"
+	_ "log"
 )
 
 type WalkOptions struct {
-	URI           string
-	Workers       int
-	RecordChannel chan *jw.WalkRecord
-	ErrorChannel  chan *jw.WalkError
-	Validate      bool
-	Format        bool
-	QuerySet      *jw.WalkQuerySet
-	Callback      WalkRecordCallbackFunc
+	URI          string
+	Workers      int
+	ValidateJSON bool
+	FormatJSON   bool
+	QuerySet     *jw.WalkQuerySet
+	Callback     WalkRecordCallbackFunc
 }
 
-type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord) error
+type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
 
 func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	wg := new(sync.WaitGroup)
 	cb := opts.Callback
 
 	jw_record_ch := make(chan *jw.WalkRecord)
@@ -37,8 +33,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 		Workers:       opts.Workers,
 		RecordChannel: jw_record_ch,
 		ErrorChannel:  jw_error_ch,
-		Format:        opts.Format,
-		Validate:      opts.Validate,
+		Format:        opts.FormatJSON,
+		Validate:      opts.ValidateJSON,
 		QuerySet:      opts.QuerySet,
 	}
 
@@ -49,38 +45,14 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 			case <-ctx.Done():
 				return
 			case err := <-jw_error_ch:
-				log.Println(err)
+				cb(ctx, nil, err)
 			case rec := <-jw_record_ch:
-
-				wg.Add(1)
-
-				go func() {
-
-					defer wg.Done()
-
-					err := cb(ctx, rec)
-
-					if err != nil {
-						jw_error_ch <- &jw.WalkError{
-							Path:       rec.Path,
-							LineNumber: rec.LineNumber,
-							Err:        err,
-						}
-					}
-				}()
-
+				cb(ctx, rec, nil)
 			default:
 				// pass
 			}
 		}
 	}()
 
-	err := jw.WalkBucket(ctx, jw_opts, bucket)
-
-	if err != nil {
-		return err
-	}
-
-	wg.Wait()
-	return nil
+	return jw.WalkBucket(ctx, jw_opts, bucket)
 }

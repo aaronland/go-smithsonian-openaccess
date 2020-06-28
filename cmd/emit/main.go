@@ -69,10 +69,6 @@ func main() {
 
 	wr := io.MultiWriter(writers...)
 
-	if *as_json {
-		wr.Write([]byte("["))
-	}
-
 	count := uint32(0)
 
 	if *stats {
@@ -89,13 +85,19 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	cb := func(ctx context.Context, rec *jw.WalkRecord) error {
+	cb := func(ctx context.Context, rec *jw.WalkRecord, err error) error {
+
+		if err != nil {
+			log.Println(err)
+			return err
+		}
 
 		var object *edan.OpenAccessRecord
 
-		err := json.Unmarshal(rec.Body, &object)
+		err = json.Unmarshal(rec.Body, &object)
 
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 
@@ -111,16 +113,18 @@ func main() {
 
 	uris := flag.Args()
 
+	if *as_json {
+		wr.Write([]byte("["))
+	}
+
 	for _, uri := range uris {
 
 		opts := &walk.WalkOptions{
-			URI:     uri,
-			Workers: *workers,
-			// RecordChannel: record_ch,
-			// ErrorChannel:  error_ch,
-			Format:   *format_json,
-			Validate: *validate_json,
-			Callback: cb,
+			URI:          uri,
+			Workers:      *workers,
+			FormatJSON:   *format_json,
+			ValidateJSON: *validate_json,
+			Callback:     cb,
 		}
 
 		if len(queries) > 0 {
