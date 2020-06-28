@@ -23,7 +23,7 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 		reader = bufio.NewReader(cr)
 	}
 
-	path := ""	
+	path := ""
 	lineno := 0
 
 	v := ctx.Value(CONTEXT_PATH)
@@ -31,7 +31,7 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 	if v != nil {
 		path = v.(string)
 	}
-	
+
 	for {
 
 		select {
@@ -61,7 +61,7 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 			continue
 		}
 
-		if opts.Validate {
+		if opts.ValidateJSON {
 
 			var stub interface{}
 			err = json.Unmarshal(body, &stub)
@@ -150,7 +150,7 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 			}
 		}
 
-		if opts.Format {
+		if opts.FormatJSON {
 			body = pretty.Pretty(body)
 		}
 

@@ -15,8 +15,8 @@ type WalkOptions struct {
 	Workers       int
 	RecordChannel chan *WalkRecord
 	ErrorChannel  chan *WalkError
-	Validate      bool
-	Format        bool
+	ValidateJSON  bool
+	FormatJSON    bool
 	QuerySet      *WalkQuerySet
 	IsBzip        bool
 }

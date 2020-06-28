@@ -30,6 +30,8 @@ $> go run -mod vendor cmd/emit/main.go -h
     	Display timings and statistics.
   -stdout
     	Emit to STDOUT (default true)
+  -validate-edan
+    	Ensure each record is a valid EDAN document.
   -validate-json
     	Ensure each record is valid JSON.
   -workers int

@@ -15,6 +15,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -30,6 +31,8 @@ func main() {
 	as_json := flag.Bool("json", false, "Emit a JSON list.")
 	validate_json := flag.Bool("validate-json", false, "Ensure each record is valid JSON.")
 	format_json := flag.Bool("format-json", false, "Format JSON output for each record.")
+
+	validate_edan := flag.Bool("validate-edan", false, "Ensure each record is a valid EDAN document.")
 
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
@@ -85,6 +88,8 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
+	mu := new(sync.RWMutex)
+
 	cb := func(ctx context.Context, rec *jw.WalkRecord, err error) error {
 
 		if err != nil {
@@ -92,13 +97,16 @@ func main() {
 			return err
 		}
 
-		var object *edan.OpenAccessRecord
+		if *validate_edan {
 
-		err = json.Unmarshal(rec.Body, &object)
+			var object *edan.OpenAccessRecord
 
-		if err != nil {
-			log.Println(err)
-			return err
+			err = json.Unmarshal(rec.Body, &object)
+
+			if err != nil {
+				log.Println(err)
+				return err
+			}
 		}
 
 		new_count := atomic.AddUint32(&count, 1)
@@ -106,6 +114,9 @@ func main() {
 		if *as_json && new_count > 1 {
 			wr.Write([]byte(","))
 		}
+
+		mu.Lock()
+		defer mu.Unlock()
 
 		wr.Write(rec.Body)
 		return nil

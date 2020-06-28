@@ -118,12 +118,14 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 				defer fh.Close()
 
-				if strings.HasSuffix(path, ".bz2") {
-					opts.IsBzip = true
+				opts.IsBzip = true
+
+				if !strings.HasSuffix(path, ".bz2") {
+					opts.IsBzip = false
 				}
 
 				ctx := context.WithValue(ctx, CONTEXT_PATH, path)
-				
+
 				WalkReader(ctx, opts, fh)
 
 			}(path)

@@ -73,6 +73,10 @@ github.com/aaronland/go-jsonl v0.0.0-20200627235310-38b8587e3ecf h1:LbHBceFv43b0
 github.com/aaronland/go-jsonl v0.0.0-20200627235310-38b8587e3ecf/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/go-jsonl v0.0.1 h1:Hi7PLbSiM+HLAxRfRGNRerEzSiv//ji9mc9RJO2C0JM=
 github.com/aaronland/go-jsonl v0.0.1/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
+github.com/aaronland/go-jsonl v0.0.2 h1:t/XLU0tQ0fJfr+1Ql/X3epiZTba7VKbmV59hDQ+UZAA=
+github.com/aaronland/go-jsonl v0.0.2/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
+github.com/aaronland/go-jsonl v0.0.3 h1:CxTzaGNvzaEdHr7Hpr+yT0i6UcPuNGsdSpMPwPY5F2M=
+github.com/aaronland/go-jsonl v0.0.3/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/openaccess-tools v0.0.0-20200625181341-806c2252b4b4 h1:/ezjpzL5jx77o8TzF0qIwGIkNNR10IGcXrwWhxZX12Y=
 github.com/aws/aws-sdk-go v1.15.27/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
 github.com/aws/aws-sdk-go v1.19.18/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=

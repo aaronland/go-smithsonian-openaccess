@@ -33,8 +33,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 		Workers:       opts.Workers,
 		RecordChannel: jw_record_ch,
 		ErrorChannel:  jw_error_ch,
-		Format:        opts.FormatJSON,
-		Validate:      opts.ValidateJSON,
+		FormatJSON:    opts.FormatJSON,
+		ValidateJSON:  opts.ValidateJSON,
 		QuerySet:      opts.QuerySet,
 	}
 
