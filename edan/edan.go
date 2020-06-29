@@ -37,11 +37,18 @@ type IIMUsage struct {
 }
 
 type IIMMedia struct {
-	Content   string   `json:"content"`
-	GUID      string   `json:"guid"`
-	IDSId     string   `json:"idsId"`
-	Thumbnail string   `json:"thumbnail"`
-	Usage     IIMUsage `json:"usage"`
+	Content   string             `json:"content"`
+	GUID      string             `json:"guid"`
+	IDSId     string             `json:"idsId"`
+	Thumbnail string             `json:"thumbnail"`
+	Usage     IIMUsage           `json:"usage"`
+	Resources []IIMMediaResource `json:"resources"`
+	Type      string             `json:"type"`
+}
+
+type IIMMediaResource struct {
+	Label string `json:"label"`
+	URL   string `json:"url"`
 }
 
 type IIMOnlineMedia struct {

@@ -1,0 +1,314 @@
+{
+    "content": {
+        "descriptiveNonRepeating": {
+            "data_source": "National Air and Space Museum",
+            "guid": "http://n2t.net/ark:/65665/nv9b2813763-4d97-4043-ad22-6863d255551e",
+            "metadata_usage": {
+                "access": "CC0"
+            },
+            "online_media": {
+                "media": [
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02510-000001",
+                        "guid": "http://n2t.net/ark:/65665/gf420345dc3-043c-4ca8-9b3b-213846faf361",
+                        "idsId": "NASM-A19710896000-NASM2015-02510-000001",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6600x6600)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02510-000001.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02510-000001_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02510-000001_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02510-000001",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    },
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02509-000001",
+                        "guid": "http://n2t.net/ark:/65665/gf4d74fae60-11be-40db-9916-4ffd2902e972",
+                        "idsId": "NASM-A19710896000-NASM2015-02509-000001",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6600x6600)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02509-000001.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02509-000001_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02509-000001_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02509-000001",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    },
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02508",
+                        "guid": "http://n2t.net/ark:/65665/gf46cde9818-fd8e-4dd3-bcfd-ae6df70fec92",
+                        "idsId": "NASM-A19710896000-NASM2015-02508",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6411x6411)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02508.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02508_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02508_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02508",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    },
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02505-000001",
+                        "guid": "http://n2t.net/ark:/65665/gf411a79a8b-12eb-47e0-88dd-8d8b70e795de",
+                        "idsId": "NASM-A19710896000-NASM2015-02505-000001",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6600x6600)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02505-000001.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02505-000001_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02505-000001_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02505-000001",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    },
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02512-000001",
+                        "guid": "http://n2t.net/ark:/65665/gf464daf47d-8523-416d-b19d-4718b13b77cd",
+                        "idsId": "NASM-A19710896000-NASM2015-02512-000001",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6600x6600)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02512-000001.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02512-000001_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02512-000001_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02512-000001",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    },
+                    {
+                        "content": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02511",
+                        "guid": "http://n2t.net/ark:/65665/gf4d90a0de5-0aa1-496f-83c2-a48837cfe7c5",
+                        "idsId": "NASM-A19710896000-NASM2015-02511",
+                        "resources": [
+                            {
+                                "label": "High-resolution JPEG (6290x6290)",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02511.jpg"
+                            },
+                            {
+                                "label": "Screen Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02511_screen"
+                            },
+                            {
+                                "label": "Thumbnail Image",
+                                "url": "https://ids.si.edu/ids/download?id=NASM-A19710896000-NASM2015-02511_thumb"
+                            }
+                        ],
+                        "thumbnail": "http://ids.si.edu/ids/deliveryService?id=NASM-A19710896000-NASM2015-02511",
+                        "type": "Images",
+                        "usage": {
+                            "access": "CC0"
+                        }
+                    }
+                ],
+                "mediaCount": 6
+            },
+            "record_ID": "nasm_A19710896000",
+            "record_link": "https://airandspace.si.edu/collection/id/nasm_A19710896000",
+            "title": {
+                "content": "Wright XR-2120, Radial 12 Engine, Cutaway",
+                "label": "Object Name"
+            },
+            "title_sort": "WRIGHT XR-2120, RADIAL 12 ENGINE, CUTAWAY",
+            "unit_code": "NASM"
+        },
+        "freetext": {
+            "creditLine": [
+                {
+                    "content": "Transferred from the U.S. Navy",
+                    "label": "Credit Line"
+                }
+            ],
+            "dataSource": [
+                {
+                    "content": "National Air and Space Museum",
+                    "label": "Data Source"
+                }
+            ],
+            "date": [
+                {
+                    "content": "Circa 1933",
+                    "label": "Date"
+                }
+            ],
+            "identifier": [
+                {
+                    "content": "A19710896000",
+                    "label": "Inventory Number"
+                }
+            ],
+            "name": [
+                {
+                    "content": "Wright Aeronautical",
+                    "label": "Manufacturer"
+                }
+            ],
+            "notes": [
+                {
+                    "content": "Type: Reciprocating, 12 cylinders, 2 rows, radial, liquid cooled",
+                    "label": "Physical Description"
+                },
+                {
+                    "content": "Power rating: 746 kW (1,000 hp) at 2,400 rpm",
+                    "label": "Physical Description"
+                },
+                {
+                    "content": "Displacement: 34.7 L (2,120 cu in.)",
+                    "label": "Physical Description"
+                },
+                {
+                    "content": "Bore and Stroke: Not available",
+                    "label": "Physical Description"
+                },
+                {
+                    "content": "Weight: 544 kg (1,200 lb)",
+                    "label": "Physical Description"
+                },
+                {
+                    "content": "In the early 1930s, the Navy supported Wright development of two new liquid-cooled engines, the XR-2120 (H-2120) and the V-1800. This was part of a \"high-speed development program\" undertaken by the Navy because of concern over the growing superiority of foreign airplanes in top speed, especially as demonstrated in the 1929 Schneider Trophy contest and again in 1931.",
+                    "label": "Summary"
+                },
+                {
+                    "content": "First of the two engines and derived from the Curtiss H-1640, it was anticipated that the XR-2120 design, with liquid cooling and enlarged cylinders, would make a good racing engine. The small diameter of the engine, considered important for drag reduction, proved to be difficult to develop due to excessive angularity of the connecting rods and other problems. The Navy withdrew support from the project, primarily because it decided to focus on the development of air-cooled engines. Convinced that the design was mechanically poor, Wright made little effort to persuade the Navy to change its decision and dropped the project.",
+                    "label": "Summary"
+                }
+            ],
+            "objectRights": [
+                {
+                    "content": "CC0",
+                    "label": "Restrictions & Rights"
+                }
+            ],
+            "objectType": [
+                {
+                    "content": "PROPULSION-Reciprocating & Rotary",
+                    "label": "Type"
+                }
+            ],
+            "physicalDescription": [
+                {
+                    "content": "Steel, Aluminum, Rubber, Textile, Magnesium, Paint, Stainless Steel",
+                    "label": "Materials"
+                },
+                {
+                    "content": "Approximate: 160 \u00d7 167.6 \u00d7 147.3cm (63 \u00d7 66 \u00d7 58 in.)",
+                    "label": "Dimensions"
+                },
+                {
+                    "content": "Approximate (Weighed with Stand): 694kg (1530lb.)",
+                    "label": "Dimensions"
+                },
+                {
+                    "content": "Depth 160 cm (63 in.), Length 167.6 cm (66 in.), Width 147.3 cm (58 in.)",
+                    "label": "Dimensions"
+                }
+            ],
+            "place": [
+                {
+                    "content": "United States of America",
+                    "label": "Country of Origin"
+                }
+            ],
+            "setName": [
+                {
+                    "content": "National Air and Space Museum Collection",
+                    "label": "See more items in"
+                }
+            ]
+        },
+        "indexedStructured": {
+            "geoLocation": [
+                {
+                    "L2": {
+                        "content": "United States of America",
+                        "type": "Country"
+                    }
+                }
+            ],
+            "name": [
+                "Wright Aeronautical"
+            ],
+            "object_type": [
+                "Rotary-wing aircraft",
+                "Reciprocating (piston) engines",
+                "Propulsion systems"
+            ],
+            "online_media_type": [
+                "Images"
+            ],
+            "place": [
+                "United States of America"
+            ],
+            "usage_flag": [
+                "Aviation",
+                "People",
+                "Piston",
+                "Propulsion",
+                "Engines"
+            ]
+        }
+    },
+    "docSignature": "5cbc77268684e128ac559ca7867cad1d04cfd328_ffa82f5f9ce4ecb9e8390add6e307183",
+    "hash": "00d9bae7afa72b67fb0069c0fbf98728f93a383b",
+    "id": "edanmdm-nasm_A19710896000",
+    "lastTimeUpdated": 1590307907,
+    "linkedId": "0",
+    "timestamp": 1590307920,
+    "title": "Wright XR-2120, Radial 12 Engine, Cutaway",
+    "type": "edanmdm",
+    "unitCode": "NASM",
+    "url": "edanmdm:nasm_A19710896000",
+    "version": ""
+}
