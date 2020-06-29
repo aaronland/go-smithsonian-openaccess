@@ -1,6 +1,7 @@
 package oembed
 
 import (
+	"errors"
 	"github.com/aaronland/go-smithsonian-openaccess/edan"
 )
 
@@ -17,19 +18,53 @@ type OEmbed struct {
 	ProviderURL  string `json:"provider_url"`
 }
 
-func OEmbedFromOpenAccessRecord(rec *edan.OpenAccessRecord) (*OEmbed, error) {
+func OEmbedRecordsFromOpenAccessRecord(rec *edan.OpenAccessRecord) ([]*OEmbed, error) {
 
-	o := &OEmbed{
-		Version:      "1.0",
-		Type:         "photo",
-		Height:       -1,
-		Width:        -1,
-		Title:        rec.Title,
-		AuthorName:   rec.Content.IndexedStructured.Name[0],
-		AuthorURL:    rec.Content.DescriptiveNonRepeating.RecordLink,
-		ProviderName: rec.Content.DescriptiveNonRepeating.DataSource,
-		ProviderURL:  rec.Content.DescriptiveNonRepeating.RecordLink,
+	media := rec.Content.DescriptiveNonRepeating.OnlineMedia.Media
+
+	records := make([]*OEmbed, 0)
+
+	for _, m := range media {
+
+		var url string
+
+		// https://github.com/Smithsonian/OpenAccess/issues/2
+		var width int
+		var height int
+
+		for _, r := range m.Resources {
+
+			if r.Label == "Screen Image" {
+				url = r.URL
+				break
+			}
+		}
+
+		if url == "" {
+			continue
+		}
+
+		// TO DO : GET CREDITLINE
+
+		o := &OEmbed{
+			Version:      "1.0",
+			Type:         "photo",
+			Height:       height,
+			Width:        width,
+			URL:          url,
+			Title:        rec.Title,
+			AuthorName:   rec.Content.IndexedStructured.Name[0],
+			AuthorURL:    rec.Content.DescriptiveNonRepeating.RecordLink,
+			ProviderName: rec.Content.DescriptiveNonRepeating.DataSource,
+			ProviderURL:  rec.Content.DescriptiveNonRepeating.RecordLink,
+		}
+
+		records = append(records, o)
 	}
 
-	return o, nil
+	if len(records) == 0 {
+		return nil, errors.New("Unable to find any suitable OEmbed records")
+	}
+
+	return records, nil
 }

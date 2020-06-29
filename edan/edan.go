@@ -106,4 +106,5 @@ type IIMIndexedStructured struct {
 	ObjectType      []string         `json:"object_type"`
 	OnlineMediaType []string         `json:"online_media_type"`
 	Place           []string         `json:"place"`
+	UsageFlag       []string         `json:"usage_flag"`
 }
