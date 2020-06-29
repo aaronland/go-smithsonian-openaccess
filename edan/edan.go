@@ -29,7 +29,7 @@ type OpenAccessRecord struct {
 type IIMObjectRecord struct {
 	DescriptiveNonRepeating IIMDescriptiveNonRepeating `json:"descriptiveNonRepeating"`
 	FreeText                IIMFreeText                `json:"freetext"`
-	IndexedStructures       IIMIndexedStructured       `json:"indexStructured"`
+	IndexedStructured       IIMIndexedStructured       `json:"indexStructured"`
 }
 
 type IIMUsage struct {
