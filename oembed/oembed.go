@@ -2,7 +2,7 @@ package oembed
 
 import (
 	"errors"
-	"github.com/aaronland/go-smithsonian-openaccess/edan"
+	"github.com/aaronland/go-smithsonian-openaccess"
 )
 
 type OEmbed struct {
@@ -18,7 +18,7 @@ type OEmbed struct {
 	ProviderURL  string `json:"provider_url"`
 }
 
-func OEmbedRecordsFromOpenAccessRecord(rec *edan.OpenAccessRecord) ([]*OEmbed, error) {
+func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbed, error) {
 
 	media := rec.Content.DescriptiveNonRepeating.OnlineMedia.Media
 

@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	jw "github.com/aaronland/go-jsonl/walk"
-	"github.com/aaronland/go-smithsonian-openaccess/edan"
+	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
@@ -99,7 +99,7 @@ func main() {
 
 		if *validate_edan {
 
-			var object *edan.OpenAccessRecord
+			var object *openaccess.OpenAccessRecord
 
 			err = json.Unmarshal(rec.Body, &object)
 
