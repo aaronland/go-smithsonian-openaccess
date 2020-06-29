@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const SCREEN_IMAGE string = "Screen Image"
+
 // https://edan.si.edu/openaccess/docs/more.html
 
 type OpenAccessRecord struct {

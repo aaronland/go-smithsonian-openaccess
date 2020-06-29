@@ -2,6 +2,7 @@ package oembed
 
 import (
 	"errors"
+	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
 )
 
@@ -20,43 +21,38 @@ type OEmbed struct {
 
 func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbed, error) {
 
-	media := rec.Content.DescriptiveNonRepeating.OnlineMedia.Media
-
 	records := make([]*OEmbed, 0)
 
-	for _, m := range media {
+	images, err := rec.ImageURLsWithLabel(openaccess.SCREEN_IMAGE)
 
-		var url string
+	if err != nil {
+		return nil, err
+	}
 
-		// https://github.com/Smithsonian/OpenAccess/issues/2
-		var width int
-		var height int
+	title := rec.Title
+	creditline := rec.CreditLine()
 
-		for _, r := range m.Resources {
+	title = fmt.Sprintf("%s. %s", title, creditline)
 
-			if r.Label == "Screen Image" {
-				url = r.URL
-				break
-			}
-		}
+	author_name := rec.Content.IndexedStructured.Name[0]
+	author_url := rec.Content.DescriptiveNonRepeating.RecordLink
 
-		if url == "" {
-			continue
-		}
+	provider_name := rec.Content.DescriptiveNonRepeating.DataSource
+	provider_url := author_url
 
-		// TO DO : GET CREDITLINE
+	for _, url := range images {
 
 		o := &OEmbed{
 			Version:      "1.0",
 			Type:         "photo",
-			Height:       height,
-			Width:        width,
+			Height:       -1,
+			Width:        -1,
 			URL:          url,
-			Title:        rec.Title,
-			AuthorName:   rec.Content.IndexedStructured.Name[0],
-			AuthorURL:    rec.Content.DescriptiveNonRepeating.RecordLink,
-			ProviderName: rec.Content.DescriptiveNonRepeating.DataSource,
-			ProviderURL:  rec.Content.DescriptiveNonRepeating.RecordLink,
+			Title:        title,
+			AuthorName:   author_name,
+			AuthorURL:    author_url,
+			ProviderName: provider_name,
+			ProviderURL:  provider_url,
 		}
 
 		records = append(records, o)
