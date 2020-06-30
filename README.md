@@ -298,6 +298,102 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
   ... and so on
 ```
 
+### findingaid
+
+A command-line tool for emitting a CSV document mapping individual record identifiers to their corresponding OpenAccess JSON file and line number, produced from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
+
+```
+> go run -mod vendor cmd/findingaid/main.go -h
+  -bucket-uri string
+    	A valid GoCloud bucket file:// URI.
+  -csv-header
+    	Include a CSV header row in the output (default true)
+  -include-all
+    	Include all OpenAccess identifiers
+  -include-guid content.descriptiveNonRepeating.guid
+    	Include the OpenAccess content.descriptiveNonRepeating.guid identifier
+  -include-openaccess-id id
+    	Include the OpenAccess id identifier
+  -include-record-id content.descriptiveNonRepeating.record_ID
+    	Include the OpenAccess content.descriptiveNonRepeating.record_ID identifier (default true)
+  -include-record-link content.descriptiveNonRepeating.record_link
+    	Include the OpenAccess content.descriptiveNonRepeating.record_link identifier
+  -null
+    	Emit to /dev/null
+  -query value
+    	One or more {PATH}={REGEXP} parameters for filtering records.
+  -query-mode string
+    	Specify how query filtering should be evaluated. Valid modes are: ALL, ANY (default "ALL")
+  -stats
+    	Display timings and statistics.
+  -stdout
+    	Emit to STDOUT (default true)
+  -workers int
+    	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
+```
+
+```
+$> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
+	metadata/objects/SAAM 
+
+id,path,line_number
+saam_1971.439.94,metadata/objects/SAAM/00.txt.bz2,1
+saam_1971.439.92,metadata/objects/SAAM/08.txt.bz2,1
+saam_1915.5.1,metadata/objects/SAAM/00.txt.bz2,2
+saam_1971.439.78,metadata/objects/SAAM/03.txt.bz2,1
+saam_XX32,metadata/objects/SAAM/12.txt.bz2,1
+saam_1983.90.173,metadata/objects/SAAM/00.txt.bz2,3
+saam_1970.335.1,metadata/objects/SAAM/03.txt.bz2,2
+saam_1971.439.97,metadata/objects/SAAM/0d.txt.bz2,1
+saam_1968.155.158,metadata/objects/SAAM/12.txt.bz2,2
+saam_1967.14.149,metadata/objects/SAAM/08.txt.bz2,2
+saam_1979.98.188,metadata/objects/SAAM/02.txt.bz2,1
+saam_1985.66.295_540,metadata/objects/SAAM/00.txt.bz2,4
+saam_1970.334,metadata/objects/SAAM/03.txt.bz2,3
+saam_1968.19.12,metadata/objects/SAAM/0d.txt.bz2,2
+... and so on
+```
+
+```
+$> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -include-all \
+   metadata/objects/NMAAHC
+   
+id,path,line_number
+http://n2t.net/ark:/65665/fd53f870fc2-73af-4c50-b1c5-a3fd2829ad1f,metadata/objects/NMAAHC/ff.txt.bz2,1
+nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
+edanmdm-nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
+http://n2t.net/ark:/65665/fd5343a21ed-73d9-4014-a34c-b175b84168c8,metadata/objects/NMAAHC/21.txt.bz2,1
+nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
+edanmdm-nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
+http://n2t.net/ark:/65665/fd59212a6e2-b745-4eb9-84ad-4368ffea8223,metadata/objects/NMAAHC/17.txt.bz2,1
+nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
+edanmdm-nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
+http://n2t.net/ark:/65665/fd599a84051-37d5-49d4-98d3-9052e5cbcea9,metadata/objects/NMAAHC/22.txt.bz2,1
+nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
+edanmdm-nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
+http://n2t.net/ark:/65665/fd53a114ad8-2cc2-4ce2-bbd0-6dd09cc715df,metadata/objects/NMAAHC/0c.txt.bz2,1
+nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
+edanmdm-nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
+http://n2t.net/ark:/65665/fd5d302d893-ae7c-4b4d-93bb-59f87237d23a,metadata/objects/NMAAHC/1c.txt.bz2,1
+nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
+edanmdm-nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
+http://n2t.net/ark:/65665/fd5ab09d12b-42bc-40f2-9557-b924d182723e,metadata/objects/NMAAHC/ff.txt.bz2,2
+nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
+https://nmaahc.si.edu/object/nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
+edanmdm-nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
+http://n2t.net/ark:/65665/fd588400c0f-66c3-4259-999d-57f112e05479,metadata/objects/NMAAHC/2b.txt.bz2,1
+nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
+https://nmaahc.si.edu/object/nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
+... and so on
+```
+
 ## See also
 
 * https://github.com/Smithsonian/OpenAccess
