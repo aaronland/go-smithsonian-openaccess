@@ -404,7 +404,7 @@ The `findingaid` tool also supports inline queries (described above). For exampl
 go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
    -query 'title=(?i)pandas?' \
    -workers 50 \
-   metadata/objects/
+   metadata/objects/ \
    > pandas.csv
 
 time passes...
