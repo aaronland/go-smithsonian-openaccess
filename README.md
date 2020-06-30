@@ -332,6 +332,8 @@ A command-line tool for emitting a CSV document mapping individual record identi
     	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
 ```
 
+For example:
+
 ```
 $> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
 	metadata/objects/SAAM 
@@ -353,6 +355,8 @@ saam_1970.334,metadata/objects/SAAM/03.txt.bz2,3
 saam_1968.19.12,metadata/objects/SAAM/0d.txt.bz2,2
 ... and so on
 ```
+
+By default only the `OpenAccess content.descriptiveNonRepeating.record_ID` identifier is included in the finding aid. You can include other identifiers with their corresponding command-line flag or enable include all identifiers by passing the `-include-all` flag. For example:
 
 ```
 $> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
@@ -391,6 +395,40 @@ edanmdm-nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
 http://n2t.net/ark:/65665/fd588400c0f-66c3-4259-999d-57f112e05479,metadata/objects/NMAAHC/2b.txt.bz2,1
 nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
 https://nmaahc.si.edu/object/nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
+... and so on
+```
+
+The `findingaid` tool also supports inline queries (described above). For example there are 4044 records with the word "panda" in their title:
+
+```
+go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -query 'title=(?i)pandas?' \
+   -workers 50 \
+   metadata/objects/
+   > pandas.csv
+
+time passes...
+
+$> wc -l pandas.csv
+    4044 pandas.csv
+
+$> less pandas.csv
+id,path,line_number
+nmah_1333041,metadata/objects/NMAH/17.txt.bz2,75
+nmah_1195220,metadata/objects/NMAH/1f.txt.bz2,520
+nmah_1065733,metadata/objects/NMAH/32.txt.bz2,393
+nmah_414524,metadata/objects/NMAH/43.txt.bz2,3302
+nmah_1298355,metadata/objects/NMAH/2a.txt.bz2,4794
+nmah_1333042,metadata/objects/NMAH/69.txt.bz2,4331
+nmah_903687,metadata/objects/NMAH/71.txt.bz2,3133
+nmah_1465552,metadata/objects/NMAH/d1.txt.bz2,137
+nmah_1449233,metadata/objects/NMAH/aa.txt.bz2,4518
+nmah_334375,metadata/objects/NMAH/bd.txt.bz2,2143
+nmah_414787,metadata/objects/NMAH/cf.txt.bz2,2140
+nmnhanthropology_8357155,metadata/objects/NMNHANTHRO/27.txt.bz2,785
+nmnhanthropology_8394769,metadata/objects/NMNHANTHRO/03.txt.bz2,1232
+nmnhanthropology_8426012,metadata/objects/NMNHANTHRO/04.txt.bz2,1441
+nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 ... and so on
 ```
 
