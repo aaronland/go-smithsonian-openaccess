@@ -7,6 +7,7 @@ import (
 	"fmt"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/aaronland/go-smithsonian-openaccess/oembed"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
@@ -31,6 +32,8 @@ func main() {
 	as_json := flag.Bool("json", false, "Emit a JSON list.")
 	validate_json := flag.Bool("validate-json", false, "Ensure each record is valid JSON.")
 	format_json := flag.Bool("format-json", false, "Format JSON output for each record.")
+
+	as_oembed := flag.Bool("oembed", false, "Emit results as OEmbed records")
 
 	validate_edan := flag.Bool("validate-edan", false, "Ensure each record is a valid EDAN document.")
 
@@ -90,6 +93,32 @@ func main() {
 
 	mu := new(sync.RWMutex)
 
+	write := func(ctx context.Context, records ...[]byte) error {
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		for _, body := range records {
+
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				// pass
+			}
+
+			new_count := atomic.AddUint32(&count, 1)
+
+			if *as_json && new_count > 1 {
+				wr.Write([]byte(","))
+			}
+
+			wr.Write(body)
+		}
+
+		return nil
+	}
+
 	cb := func(ctx context.Context, rec *jw.WalkRecord, err error) error {
 
 		if err != nil {
@@ -97,9 +126,10 @@ func main() {
 			return err
 		}
 
-		if *validate_edan {
+		records := make([][]byte, 0)
+		var object *openaccess.OpenAccessRecord
 
-			var object *openaccess.OpenAccessRecord
+		if *validate_edan || *as_oembed {
 
 			err = json.Unmarshal(rec.Body, &object)
 
@@ -107,19 +137,36 @@ func main() {
 				log.Println(err)
 				return err
 			}
+
+			if *as_oembed {
+
+				oembed_records, err := oembed.OEmbedRecordsFromOpenAccessRecord(object)
+
+				if err != nil {
+					log.Printf("Unable to construct oembed records from object '%s': %v\n", object.Id, err)
+					return nil
+				}
+
+				for _, o_rec := range oembed_records {
+
+					body, err := json.Marshal(o_rec)
+
+					if err != nil {
+						return err
+					}
+
+					records = append(records, body)
+				}
+
+			} else {
+				records = append(records, rec.Body)
+			}
+
+		} else {
+			records = append(records, rec.Body)
 		}
 
-		new_count := atomic.AddUint32(&count, 1)
-
-		if *as_json && new_count > 1 {
-			wr.Write([]byte(","))
-		}
-
-		mu.Lock()
-		defer mu.Unlock()
-
-		wr.Write(rec.Body)
-		return nil
+		return write(ctx, records...)
 	}
 
 	uris := flag.Args()

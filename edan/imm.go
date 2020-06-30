@@ -7,84 +7,85 @@ package edan
 // Index Metadata ModelFor Objects
 
 type IIMObjectRecord struct {
-	DescriptiveNonRepeating IIMDescriptiveNonRepeating `json:"descriptiveNonRepeating"`
-	FreeText                IIMFreeText                `json:"freetext"`
-	IndexedStructured       IIMIndexedStructured       `json:"indexStructured"`
+	DescriptiveNonRepeating IIMDescriptiveNonRepeating `json:"descriptiveNonRepeating,omitempty"`
+	FreeText                IIMFreeText                `json:"freetext,omitempty"`
+	IndexedStructured       IIMIndexedStructured       `json:"indexStructured,omitempty"`
 }
 
 type IIMUsage struct {
-	Access string `json:"access"`
+	Access string `json:"access,omitempty"`
 }
 
 type IIMMedia struct {
-	Content   string             `json:"content"`
-	GUID      string             `json:"guid"`
-	IDSId     string             `json:"idsId"`
-	Thumbnail string             `json:"thumbnail"`
-	Usage     IIMUsage           `json:"usage"`
-	Resources []IIMMediaResource `json:"resources"`
-	Type      string             `json:"type"`
+	Content   string             `json:"content,omitempty"`
+	GUID      string             `json:"guid,omitempty"`
+	IDSId     string             `json:"idsId,omitempty"`
+	Thumbnail string             `json:"thumbnail,omitempty"`
+	Usage     IIMUsage           `json:"usage,omitempty"`
+	Resources []IIMMediaResource `json:"resources,omitempty"`
+	Type      string             `json:"type,omitempty"`
 }
 
 type IIMMediaResource struct {
-	Label string `json:"label"`
-	URL   string `json:"url"`
+	Label string `json:"label,omitempty"`
+	URL   string `json:"url,omitempty"`
 }
 
 type IIMOnlineMedia struct {
-	Media      []IIMMedia `json:"media"`
-	MediaCount int        `json:"mediaCount"`
+	Media      []IIMMedia `json:"media,omitempty"`
+	MediaCount int        `json:"mediaCount,omitempty"`
 }
 
 type IIMContentLabel struct {
-	Content string `json:"content"`
-	Label   string `json:"label"`
+	Content string `json:"content,omitempty"`
+	Label   string `json:"label,omitempty"`
 }
 
 type IIMDescriptiveNonRepeating struct {
-	DataSource    string          `json:"data_source"`
-	GUID          string          `json:"guid"`
-	MetadataUsage IIMUsage        `json:"metadata_usage"`
-	OnlineMedia   IIMOnlineMedia  `json:"online_media"`
-	RecordId      string          `json:"record_ID"`
-	RecordLink    string          `json:"record_link"`
-	Title         IIMContentLabel `json:"title"`
-	TitleSort     string          `json:"title_sort"`
-	UnitCode      string          `json:"unit_code"`
+	DataSource    string          `json:"data_source,omitempty"`
+	GUID          string          `json:"guid,omitempty"`
+	MetadataUsage IIMUsage        `json:"metadata_usage,omitempty"`
+	OnlineMedia   IIMOnlineMedia  `json:"online_media,omitempty"`
+	RecordId      string          `json:"record_ID,omitempty"`
+	RecordLink    string          `json:"record_link,omitempty"`
+	Title         IIMContentLabel `json:"title,omitempty"`
+	TitleSort     string          `json:"title_sort,omitempty"`
+	UnitCode      string          `json:"unit_code,omitempty"`
 }
 
 // maybe just this instead?
 // type IIMFreeText map[string][]IIMContentLabel
 
 type IIMFreeText struct {
-	CreditLine           []IIMContentLabel `json:"creditLine"`
-	DataSource           []IIMContentLabel `json:"dataSource"`
-	Date                 []IIMContentLabel `json:"date"`
-	Identifier           []IIMContentLabel `json:"identifier"`
-	Name                 []IIMContentLabel `json:"name"`
-	Notes                []IIMContentLabel `json:"notes"`
-	ObjectRights         []IIMContentLabel `json:"objectRights"`
-	ObjectType           []IIMContentLabel `json:"objectType"`
-	PhysicalDescriptions []IIMContentLabel `json:"physicalDescription"`
-	Place                []IIMContentLabel `json:"place"`
-	SetName              []IIMContentLabel `json:"setName"`
+	CreditLine           []IIMContentLabel `json:"creditLine,omitempty"`
+	DataSource           []IIMContentLabel `json:"dataSource,omitempty"`
+	Date                 []IIMContentLabel `json:"date,omitempty"`
+	Identifier           []IIMContentLabel `json:"identifier,omitempty"`
+	Manufacturer         []IIMContentLabel `json:"manufacturer,omitempty"`
+	Name                 []IIMContentLabel `json:"name,omitempty"`
+	Notes                []IIMContentLabel `json:"notes,omitempty"`
+	ObjectRights         []IIMContentLabel `json:"objectRights,omitempty"`
+	ObjectType           []IIMContentLabel `json:"objectType,omitempty"`
+	PhysicalDescriptions []IIMContentLabel `json:"physicalDescription,omitempty"`
+	Place                []IIMContentLabel `json:"place,omitempty"`
+	SetName              []IIMContentLabel `json:"setName,omitempty"`
 }
 
 type IIMGeoLocationLevel struct {
-	Content string `json:"content"`
-	Type    string `json:"type"`
+	Content string `json:"content,omitempty"`
+	Type    string `json:"type,omitempty"`
 }
 
 type IIMGeoLocation struct {
-	L2 IIMGeoLocationLevel `json:"L2"`
+	L2 IIMGeoLocationLevel `json:"L2,omitempty"`
 }
 
 type IIMIndexedStructured struct {
-	Date            []string         `json:"date"`
-	GeoLocation     []IIMGeoLocation `json:"geoLocation"`
-	Name            []string         `json:"name"`
-	ObjectType      []string         `json:"object_type"`
-	OnlineMediaType []string         `json:"online_media_type"`
-	Place           []string         `json:"place"`
-	UsageFlag       []string         `json:"usage_flag"`
+	Date            []string         `json:"date,omitempty"`
+	GeoLocation     []IIMGeoLocation `json:"geoLocation,omitempty"`
+	Name            []string         `json:"name,omitempty"`
+	ObjectType      []string         `json:"object_type,omitempty"`
+	OnlineMediaType []string         `json:"online_media_type,omitempty"`
+	Place           []string         `json:"place,omitempty"`
+	UsageFlag       []string         `json:"usage_flag,omitempty"`
 }
