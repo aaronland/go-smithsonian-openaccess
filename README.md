@@ -261,7 +261,7 @@ The OEmbed record `title` property will be constructed in the form of "{OBJECT T
 
 The OEmbed record `author_name` property will be constructed using the OpenAccess record's `content.freetext.name` or `content.freetext.manufacturer` properties, in that order. If neither are present the `author_name` property will be constructed in the form of "Collection of {SMITHSONIAN UNIT NAME}".
 
-The OEmbed record `width` and `height` property are both set to "-1" to indicate that image dimensions are [not available at this time](https://github.com/Smithsonian/OpenAccess/issues/2).
+The OEmbed record `width` and `height` properties are both set to "-1" to indicate that image dimensions are [not available at this time](https://github.com/Smithsonian/OpenAccess/issues/2).
 
 ```
 $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
