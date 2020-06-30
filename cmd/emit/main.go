@@ -143,7 +143,7 @@ func main() {
 				oembed_records, err := oembed.OEmbedRecordsFromOpenAccessRecord(object)
 
 				if err != nil {
-					log.Printf("Unable to construct oembed records from object '%s': %v\n", object.Id, err)
+					// log.Printf("Unable to construct oembed records from object '%s': %v\n", object.Id, err)
 					return nil
 				}
 

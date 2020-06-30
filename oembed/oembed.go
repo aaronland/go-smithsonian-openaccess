@@ -1,12 +1,12 @@
 package oembed
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/tidwall/pretty"
-	"log"
+	// "github.com/tidwall/pretty"
+	// "log"
 	"net/url"
 )
 
@@ -58,10 +58,11 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 
 	if len(images) == 0 {
 
-		body, _ := json.Marshal(rec)
-		log.Println(string(pretty.Pretty(body)))
+		// this should go in a function... somewhere (20200630/thisisaaronland)
+		// body, _ := json.Marshal(rec)
+		// log.Println(string(pretty.Pretty(body)))
 
-		msg := fmt.Sprintf("OpenAccess record lacks any media objects of type '%s'", openaccess.SCREEN_IMAGE)
+		msg := fmt.Sprintf("OpenAccess record lacks any media objects of type '%s' or 'Images'", openaccess.SCREEN_IMAGE)
 		return nil, errors.New(msg)
 	}
 
@@ -99,8 +100,8 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 		o := &OEmbed{
 			Version:      "1.0",
 			Type:         "photo",
-			Height:       -1,
-			Width:        -1,
+			Height:       -1, // https://github.com/Smithsonian/OpenAccess/issues/2
+			Width:        -1, // see above
 			URL:          url,
 			Title:        title,
 			AuthorName:   author_name,

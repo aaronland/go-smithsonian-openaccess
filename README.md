@@ -22,6 +22,8 @@ $> go run -mod vendor cmd/emit/main.go -h
     	Emit a JSON list.
   -null
     	Emit to /dev/null
+  -oembed
+    	Emit results as OEmbed records
   -query value
     	One or more {PATH}={REGEXP} parameters for filtering records.
   -query-mode string
@@ -249,6 +251,51 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 "Plicate Kitten's Paw"
 "Atlantic Kitten's Paw"
 "Drosophila arawakana kittensis"
+```
+
+#### Oembed
+
+It is also possible to emit OpenAccess records as [OEmbed](https://oembed.com/) documents of type "photo". An OEmbed record will be created for each media object of type "Screen Image" or "Images" associated with an OpenAccess record. OpenAccess records that do not have an suitable media objects will be excluded.
+
+The OEmbed record `title` property will be constructed in the form of "{OBJECT TITLE} ({OBJECT CREDIT LINE}".
+
+The OEmbed record `author_name` property will be constructed using the OpenAccess record's `content.freetext.name` or `content.freetext.manufacturer` properties, in that order. If neither are present the `author_name` property will be constructed in the form of "Collection of {SMITHSONIAN UNIT NAME}".
+
+The OEmbed record `width` and `height` property are both set to "-1" to indicate that image dimensions are [not available at this time](https://github.com/Smithsonian/OpenAccess/issues/2).
+
+```
+$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+   -json \
+   -oembed \
+   metadata/objects/SAAM \
+   | jq
+   
+[
+  {
+    "version": "1.0",
+    "type": "photo",
+    "width": -1,
+    "height": -1,
+    "title": "San Piero a Grado, near Pisa (Smithsonian American Art Museum, Bequest of Carolann Smurthwaite in memory of her mother, Caroline Atherton Connell Smurthwaite)",
+    "url": "https://ids.si.edu/ids/download?id=SAAM-1983.83.134_1_screen",
+    "author_name": "George Elbert Burr, born Monroe Falls, OH 1859-died Phoenix, AZ 1939",
+    "author_url": "http://americanart.si.edu/collections/search/artwork/?id=3299",
+    "provider_name": "Smithsonian American Art Museum",
+    "provider_url": "http://americanart.si.edu"
+  },
+  {
+    "version": "1.0",
+    "type": "photo",
+    "width": -1,
+    "height": -1,
+    "title": "Politician (Smithsonian American Art Museum, Gift of Jack Lord)",
+    "url": "https://ids.si.edu/ids/download?id=SAAM-1971.439.22_1_screen",
+    "author_name": "José Guadalupe Posada, Mexican, Aguascalientes, Mexico 1852-died Mexico City, Mexico 1913",
+    "author_url": "http://americanart.si.edu/collections/search/artwork/?id=19951",
+    "provider_name": "Smithsonian American Art Museum",
+    "provider_url": "http://americanart.si.edu"
+  },
+  ... and so on
 ```
 
 ## See also
