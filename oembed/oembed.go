@@ -10,7 +10,7 @@ import (
 	"net/url"
 )
 
-type OEmbed struct {
+type OEmbedRecord struct {
 	Version      string `json:"version,xml:"version""`
 	Type         string `json:"type"`
 	Width        int    `json:"width"`
@@ -23,7 +23,7 @@ type OEmbed struct {
 	ProviderURL  string `json:"provider_url"`
 }
 
-func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbed, error) {
+func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbedRecord, error) {
 
 	images, err := rec.ImageURLsWithLabel(openaccess.SCREEN_IMAGE)
 
@@ -66,7 +66,7 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 		return nil, errors.New(msg)
 	}
 
-	records := make([]*OEmbed, 0)
+	records := make([]*OEmbedRecord, 0)
 
 	title := rec.Title
 	creditline := rec.CreditLine()
@@ -97,7 +97,7 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 
 	for _, url := range images {
 
-		o := &OEmbed{
+		o := &OEmbedRecord{
 			Version:      "1.0",
 			Type:         "photo",
 			Height:       -1, // https://github.com/Smithsonian/OpenAccess/issues/2

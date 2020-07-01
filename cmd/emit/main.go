@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -107,6 +108,8 @@ func main() {
 				// pass
 			}
 
+			body = bytes.TrimSpace(body)
+
 			new_count := atomic.AddUint32(&count, 1)
 
 			if *as_json && new_count > 1 {
@@ -114,6 +117,7 @@ func main() {
 			}
 
 			wr.Write(body)
+			wr.Write([]byte("\n"))
 		}
 
 		return nil
