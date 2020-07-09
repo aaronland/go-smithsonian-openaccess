@@ -1,14 +1,28 @@
 package oembed
 
 import (
-	// "encoding/json"
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
-	// "github.com/tidwall/pretty"
-	// "log"
+	"github.com/jtacoma/uritemplates"
 	"net/url"
+	"strings"
 )
+
+const OBJECT_URI_TEMPLATE string = "si://{collection}/o/{objectid}"
+
+var object_uri_template *uritemplates.UriTemplate
+
+func init() {
+
+	t, err := uritemplates.Parse(OBJECT_URI_TEMPLATE)
+
+	if err != nil {
+		panic(err)
+	}
+
+	object_uri_template = t
+}
 
 type OEmbedRecord struct {
 	Version      string `json:"version,xml:"version""`
@@ -21,6 +35,7 @@ type OEmbedRecord struct {
 	AuthorURL    string `json:"author_url"`
 	ProviderName string `json:"provider_name"`
 	ProviderURL  string `json:"provider_url"`
+	ObjectURI    string `json:"object_uri"`
 }
 
 func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbedRecord, error) {
@@ -87,6 +102,55 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 		// pass
 	}
 
+	// object_uri and author_url
+	// ...please write me
+
+	// https://nmaahc.si.edu/object/nmaahc_2010.39.8
+	// si://nmaahc/o/2011_155_299ab
+
+	// https://airandspace.si.edu/collection/id/nasm_A20060281000
+	// si://nasm/o/A19820380000
+
+	// http://collection.cooperhewitt.org/view/objects/asitem/id/81405
+	// si://chndm/o/1972-42-130-a_b
+
+	/*
+
+	{
+	  "version": "1.0",
+	  "type": "photo",
+	  "width": -1,
+	  "height": -1,
+	  "title": "License, Aviator's, Brevetto Superiore (Donated by the Family of George Harold Cronin)",
+	  "url": "http://ids.si.edu/ids/deliveryService?id=NASM-A19940181000_PS02",
+	  "author_name": "Collection of National Air and Space Museum",
+	  "author_url": "https://airandspace.si.edu/collection/id/nasm_A19940181000",
+	  "provider_name": "National Air and Space Museum",
+	  "provider_url": "https://airandspace.si.edu",
+	  "object_uri": "si://nasm/o/A19940181000"
+	}
+
+	*/
+
+	unit := rec.UnitCode
+	unit = strings.ToLower(unit)
+
+	objectid_prefix := fmt.Sprintf("edanmdm-%s_", unit)
+
+	objectid := rec.Id
+	objectid = strings.Replace(objectid, objectid_prefix, "", 1)
+	objectid = strings.Replace(objectid, ".", "_", -1)
+
+	values := make(map[string]interface{})
+	values["collection"] = unit
+	values["objectid"] = objectid
+
+	object_uri, err := object_uri_template.Expand(values)
+
+	if err != nil {
+		return nil, err
+	}
+
 	u, err := url.Parse(provider_url)
 
 	if err == nil {
@@ -108,6 +172,7 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 			AuthorURL:    author_url,
 			ProviderName: provider_name,
 			ProviderURL:  provider_url,
+			ObjectURI:    object_uri,
 		}
 
 		records = append(records, o)

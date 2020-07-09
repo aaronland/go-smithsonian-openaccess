@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/aaronland/go-jsonl v0.0.3
-	github.com/tidwall/pretty v1.0.1
+	github.com/jtacoma/uritemplates v1.0.0
+	github.com/tidwall/pretty v1.0.1 // indirect
 	gocloud.dev v0.20.0
 )
