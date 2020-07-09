@@ -263,7 +263,7 @@ For example:
 $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
    -json \
    -oembed \
-   metadata/objects/SAAM \
+   metadata/objects/NASM \
    | jq
    
 [
