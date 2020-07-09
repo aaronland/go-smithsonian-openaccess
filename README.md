@@ -257,11 +257,7 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 
 It is also possible to emit OpenAccess records as [OEmbed](https://oembed.com/) documents of type "photo". An OEmbed record will be created for each media object of type "Screen Image" or "Images" associated with an OpenAccess record. OpenAccess records that do not have an suitable media objects will be excluded.
 
-The OEmbed record `title` property will be constructed in the form of "{OBJECT TITLE} ({OBJECT CREDIT LINE})".
-
-The OEmbed record `author_name` property will be constructed using the OpenAccess record's `content.freetext.name` or `content.freetext.manufacturer` properties, in that order. If neither are present the `author_name` property will be constructed in the form of "Collection of {SMITHSONIAN UNIT NAME}".
-
-The OEmbed record `width` and `height` properties are both set to "-1" to indicate that image dimensions are [not available at this time](https://github.com/Smithsonian/OpenAccess/issues/2).
+For example:
 
 ```
 $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
@@ -271,32 +267,46 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
    | jq
    
 [
-  {
-    "version": "1.0",
-    "type": "photo",
-    "width": -1,
-    "height": -1,
-    "title": "San Piero a Grado, near Pisa (Smithsonian American Art Museum, Bequest of Carolann Smurthwaite in memory of her mother, Caroline Atherton Connell Smurthwaite)",
-    "url": "https://ids.si.edu/ids/download?id=SAAM-1983.83.134_1_screen",
-    "author_name": "George Elbert Burr, born Monroe Falls, OH 1859-died Phoenix, AZ 1939",
-    "author_url": "http://americanart.si.edu/collections/search/artwork/?id=3299",
-    "provider_name": "Smithsonian American Art Museum",
-    "provider_url": "http://americanart.si.edu"
-  },
-  {
-    "version": "1.0",
-    "type": "photo",
-    "width": -1,
-    "height": -1,
-    "title": "Politician (Smithsonian American Art Museum, Gift of Jack Lord)",
-    "url": "https://ids.si.edu/ids/download?id=SAAM-1971.439.22_1_screen",
-    "author_name": "José Guadalupe Posada, Mexican, Aguascalientes, Mexico 1852-died Mexico City, Mexico 1913",
-    "author_url": "http://americanart.si.edu/collections/search/artwork/?id=19951",
-    "provider_name": "Smithsonian American Art Museum",
-    "provider_url": "http://americanart.si.edu"
-  },
+{
+  "version": "1.0",
+  "type": "photo",
+  "width": -1,
+  "height": -1,
+  "title": "Clerget 9 A Diesel, Radial 9 Engine (Gift of the Musee de L' Air)",
+  "url": "https://ids.si.edu/ids/download?id=NASM-A19721334000-NASM2016-04025_screen",
+  "author_name": "Clerget, Blin and Cie",
+  "author_url": "https://airandspace.si.edu/collection/id/nasm_A19721334000",
+  "provider_name": "National Air and Space Museum",
+  "provider_url": "https://airandspace.si.edu",
+  "object_uri": "si://nasm/o/A19721334000"
+},
+{
+  "version": "1.0",
+  "type": "photo",
+  "width": -1,
+  "height": -1,
+  "title": "Swagger Stick, Royal Flying Corps (Gift of Eloise and John Charlton)",
+  "url": "https://ids.si.edu/ids/download?id=NASM-A19830196000_PS01_screen",
+  "author_name": "Lt. Wes D. Archer",
+  "author_url": "https://airandspace.si.edu/collection/id/nasm_A19830196000",
+  "provider_name": "National Air and Space Museum",
+  "provider_url": "https://airandspace.si.edu",
+  "object_uri": "si://nasm/o/A19830196000"
+}
   ... and so on
 ```
+
+* The OEmbed record `title` property will be constructed in the form of "{OBJECT TITLE} ({OBJECT CREDIT LINE})".
+
+* The OEmbed record `author_name` property will be constructed using the OpenAccess record's `content.freetext.name` or `content.freetext.manufacturer` properties, in that order. If neither are present the `author_name` property will be constructed in the form of "Collection of {SMITHSONIAN UNIT NAME}".
+
+* The OEmbed record `author_url` property will that object's URL on the web.
+
+* The OEmbed record `width` and `height` properties are both set to "-1" to indicate that image dimensions are [not available at this time](https://github.com/Smithsonian/OpenAccess/issues/2).
+
+* The OEmbed record will contain a non-standard `object_uri` string that is compatiable with [RFC6570 URI Templates](https://tools.ietf.org/html/rfc6570). It is constructed in the form of `si://{SMITHSONIAN_UNIT}/o/{NORMALIZAED_EDAN_OBJECT_ID}`. The `object_uri` property should still be considered experimental. It may change or be removed in future releases.
+
+* `{NORMALIZAED_EDAN_OBJECT_ID}` strings are derived from the OpenAccess `id` property. The normalization rules are: Remove the leading `edanmdm-{SMITHSONIAN_UNIT}_` prefix and replace all instances of the `.` character the with a `_` character. For example the string `edanmdm-nmaahc_2017.30.9` will be normalized as `2017_30_9`.
 
 ### findingaid
 
