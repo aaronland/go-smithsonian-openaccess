@@ -1,5 +1,7 @@
 # github.com/aaronland/go-jsonl v0.0.3
 github.com/aaronland/go-jsonl/walk
+# github.com/aaronland/go-wunderkammer v0.0.1
+github.com/aaronland/go-wunderkammer/oembed
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.4.2

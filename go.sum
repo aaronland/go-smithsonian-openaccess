@@ -67,6 +67,7 @@ github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbt
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/GoogleCloudPlatform/cloudsql-proxy v0.0.0-20191009163259-e802c2cb94ae/go.mod h1:mjwGPas4yKduTyubHvD1Atl9r1rUq8DfVy+gkVvZ+oo=
+github.com/PuerkitoBio/goquery v1.5.1/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/aaronland/go-jsonl v0.0.0-20200627232230-79cdf6854da2 h1:7kvnfCkK56jo3W0RBnnDKoC0bMYWsTcR9qNIDEO8LN0=
 github.com/aaronland/go-jsonl v0.0.0-20200627232230-79cdf6854da2/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/go-jsonl v0.0.0-20200627235310-38b8587e3ecf h1:LbHBceFv43b0jk2unvuTPAdWjeDvOgTW/Cht/1/tHyA=
@@ -77,7 +78,10 @@ github.com/aaronland/go-jsonl v0.0.2 h1:t/XLU0tQ0fJfr+1Ql/X3epiZTba7VKbmV59hDQ+U
 github.com/aaronland/go-jsonl v0.0.2/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/go-jsonl v0.0.3 h1:CxTzaGNvzaEdHr7Hpr+yT0i6UcPuNGsdSpMPwPY5F2M=
 github.com/aaronland/go-jsonl v0.0.3/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
+github.com/aaronland/go-wunderkammer v0.0.1 h1:u7Mi6X8ULDv9cDjASUtX4Dv3dFTIqY0aVyqbjJl2dOI=
+github.com/aaronland/go-wunderkammer v0.0.1/go.mod h1:Bii4kJgWlEfeaKy5DTw2zVTfsQ3xb4HI4m00sXKtQc4=
 github.com/aaronland/openaccess-tools v0.0.0-20200625181341-806c2252b4b4 h1:/ezjpzL5jx77o8TzF0qIwGIkNNR10IGcXrwWhxZX12Y=
+github.com/andybalholm/cascadia v1.1.0/go.mod h1:GsXiBklL0woXo1j/WYWtSYYC4ouU9PqHO0sqidkEA4Y=
 github.com/aws/aws-sdk-go v1.15.27/go.mod h1:mFuSZ37Z9YOHbQEwBWztmVzqXrEkub65tZoCYDt7FT0=
 github.com/aws/aws-sdk-go v1.19.18/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.31.13/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU8YkpAk0=
@@ -174,6 +178,7 @@ github.com/lib/pq v1.1.1/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/mattn/go-ieproxy v0.0.0-20190610004146-91bb50d98149/go.mod h1:31jz6HNzdxOmlERGGEc4v/dMssOfmp2p5bT/okiKFFc=
 github.com/mattn/go-ieproxy v0.0.0-20190702010315-6dee0af9227d/go.mod h1:31jz6HNzdxOmlERGGEc4v/dMssOfmp2p5bT/okiKFFc=
 github.com/mattn/go-ieproxy v0.0.1/go.mod h1:pYabZ6IHcRpFh7vIaLfK7rdcWgFEb3SFJ6/gNWuh88E=
+github.com/mattn/go-sqlite3 v1.14.0/go.mod h1:JIl7NbARA7phWnGvh0LKTyg7S9BA+6gx71ShQilpsus=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
@@ -238,6 +243,7 @@ golang.org/x/mod v0.1.1-0.20191105210325-c90efee705ee/go.mod h1:QqPTAvyqsEbceGzB
 golang.org/x/mod v0.1.1-0.20191107180719-034126e5016b/go.mod h1:QqPTAvyqsEbceGzBzNggFXnrqF1CaUcvgkdR5Ot7KZg=
 golang.org/x/mod v0.2.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.3.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
+golang.org/x/net v0.0.0-20180218175443-cbe0f9307d01/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180724234803-3673e40ba225/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

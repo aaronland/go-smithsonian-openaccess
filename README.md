@@ -8,6 +8,14 @@ This is work in progress. Proper documentation to follow.
 
 ## Tools
 
+To build binary versions of these tools run the `cli` Makefile target. For example:
+
+```
+$> make cli
+go build -mod vendor -o bin/emit cmd/emit/main.go
+go build -mod vendor -o bin/findingaid cmd/findingaid/main.go
+```
+
 ### emit
 
 A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.

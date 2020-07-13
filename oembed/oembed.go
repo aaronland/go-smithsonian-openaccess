@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/aaronland/go-wunderkammer/oembed"	
 	"github.com/jtacoma/uritemplates"
 	"net/url"
 	"strings"
@@ -24,21 +25,7 @@ func init() {
 	object_uri_template = t
 }
 
-type OEmbedRecord struct {
-	Version      string `json:"version,xml:"version""`
-	Type         string `json:"type"`
-	Width        int    `json:"width"`
-	Height       int    `json:"height"`
-	Title        string `json:"title"`
-	URL          string `json:"url"`
-	AuthorName   string `json:"author_name"`
-	AuthorURL    string `json:"author_url"`
-	ProviderName string `json:"provider_name"`
-	ProviderURL  string `json:"provider_url"`
-	ObjectURI    string `json:"object_uri"`
-}
-
-func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEmbedRecord, error) {
+func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*oembed.Photo, error) {
 
 	images, err := rec.ImageURLsWithLabel(openaccess.SCREEN_IMAGE)
 
@@ -81,7 +68,7 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 		return nil, errors.New(msg)
 	}
 
-	records := make([]*OEmbedRecord, 0)
+	records := make([]*oembed.Photo, 0)
 
 	title := rec.Title
 	creditline := rec.CreditLine()
@@ -114,24 +101,6 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 	// http://collection.cooperhewitt.org/view/objects/asitem/id/81405
 	// si://chndm/o/1972-42-130-a_b
 
-	/*
-
-	{
-	  "version": "1.0",
-	  "type": "photo",
-	  "width": -1,
-	  "height": -1,
-	  "title": "License, Aviator's, Brevetto Superiore (Donated by the Family of George Harold Cronin)",
-	  "url": "http://ids.si.edu/ids/deliveryService?id=NASM-A19940181000_PS02",
-	  "author_name": "Collection of National Air and Space Museum",
-	  "author_url": "https://airandspace.si.edu/collection/id/nasm_A19940181000",
-	  "provider_name": "National Air and Space Museum",
-	  "provider_url": "https://airandspace.si.edu",
-	  "object_uri": "si://nasm/o/A19940181000"
-	}
-
-	*/
-
 	unit := rec.UnitCode
 	unit = strings.ToLower(unit)
 
@@ -161,7 +130,7 @@ func OEmbedRecordsFromOpenAccessRecord(rec *openaccess.OpenAccessRecord) ([]*OEm
 
 	for _, url := range images {
 
-		o := &OEmbedRecord{
+		o := &oembed.Photo{
 			Version:      "1.0",
 			Type:         "photo",
 			Height:       -1, // https://github.com/Smithsonian/OpenAccess/issues/2
