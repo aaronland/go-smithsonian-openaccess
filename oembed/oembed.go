@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/aaronland/go-wunderkammer/oembed"	
+	"github.com/aaronland/go-wunderkammer/oembed"
 	"github.com/jtacoma/uritemplates"
 	"net/url"
 	"strings"

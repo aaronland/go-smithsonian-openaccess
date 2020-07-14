@@ -5,8 +5,8 @@ import (
 	"compress/bzip2"
 	"context"
 	"encoding/json"
-	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
+	"github.com/aaronland/go-json-query"	
 	"io"
 )
 
@@ -95,57 +95,21 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 
 		if opts.QuerySet != nil {
 
-			queries := opts.QuerySet.Queries
-			mode := opts.QuerySet.Mode
+			matches, err := query.Matches(ctx, opts.QuerySet, body)
 
-			tests := len(queries)
-			matches := 0
+			if err != nil {
 
-			for _, q := range queries {
-
-				rsp := gjson.GetBytes(body, q.Path)
-
-				if !rsp.Exists() {
-
-					if mode == QUERYSET_MODE_ALL {
-						break
-					}
+				e := &WalkError{
+					Path:       path,
+					LineNumber: lineno,
+					Err:        err,
 				}
-
-				for _, r := range rsp.Array() {
-
-					has_match := true
-
-					if !q.Match.MatchString(r.String()) {
-
-						has_match = false
-
-						if mode == QUERYSET_MODE_ALL {
-							break
-						}
-					}
-
-					if !has_match {
-
-						if mode == QUERYSET_MODE_ALL {
-							break
-						}
-
-						continue
-					}
-
-					matches += 1
-				}
+				
+				error_ch <- e
+				continue
 			}
 
-			if mode == QUERYSET_MODE_ALL {
-
-				if matches < tests {
-					continue
-				}
-			}
-
-			if matches == 0 {
+			if !matches {
 				continue
 			}
 		}

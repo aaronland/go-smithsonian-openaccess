@@ -1,4 +1,4 @@
-package walk
+package query
 
 import (
 	"errors"
@@ -8,13 +8,13 @@ import (
 
 const SEP string = "="
 
-type WalkQueryFlags []*WalkQuery
+type QueryFlags []*Query
 
-func (m *WalkQueryFlags) String() string {
+func (m *QueryFlags) String() string {
 	return ""
 }
 
-func (m *WalkQueryFlags) Set(value string) error {
+func (m *QueryFlags) Set(value string) error {
 
 	parts := strings.Split(value, SEP)
 
@@ -31,7 +31,7 @@ func (m *WalkQueryFlags) Set(value string) error {
 		return err
 	}
 
-	q := &WalkQuery{
+	q := &Query{
 		Path:  path,
 		Match: re,
 	}

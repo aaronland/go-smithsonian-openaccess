@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/oembed"
@@ -40,13 +41,13 @@ func main() {
 
 	stats := flag.Bool("stats", false, "Display timings and statistics.")
 
-	var queries jw.WalkQueryFlags
+	var queries query.QueryFlags
 	flag.Var(&queries, "query", "One or more {PATH}={REGEXP} parameters for filtering records.")
 
-	valid_modes := strings.Join([]string{jw.QUERYSET_MODE_ALL, jw.QUERYSET_MODE_ANY}, ", ")
+	valid_modes := strings.Join([]string{query.QUERYSET_MODE_ALL, query.QUERYSET_MODE_ANY}, ", ")
 	desc_modes := fmt.Sprintf("Specify how query filtering should be evaluated. Valid modes are: %s", valid_modes)
 
-	query_mode := flag.String("query-mode", jw.QUERYSET_MODE_ALL, desc_modes)
+	query_mode := flag.String("query-mode", query.QUERYSET_MODE_ALL, desc_modes)
 
 	flag.Parse()
 
@@ -191,7 +192,7 @@ func main() {
 
 		if len(queries) > 0 {
 
-			qs := &jw.WalkQuerySet{
+			qs := &query.QuerySet{
 				Queries: queries,
 				Mode:    *query_mode,
 			}

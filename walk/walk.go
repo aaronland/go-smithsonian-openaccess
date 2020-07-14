@@ -2,6 +2,7 @@ package walk
 
 import (
 	"context"
+	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"gocloud.dev/blob"
 	_ "log"
@@ -12,7 +13,7 @@ type WalkOptions struct {
 	Workers      int
 	ValidateJSON bool
 	FormatJSON   bool
-	QuerySet     *jw.WalkQuerySet
+	QuerySet     *query.QuerySet
 	Callback     WalkRecordCallbackFunc
 }
 

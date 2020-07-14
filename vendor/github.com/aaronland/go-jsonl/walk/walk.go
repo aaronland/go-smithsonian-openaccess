@@ -2,11 +2,8 @@ package walk
 
 import (
 	"fmt"
-	"regexp"
+	"github.com/aaronland/go-json-query"
 )
-
-const QUERYSET_MODE_ANY string = "ANY"
-const QUERYSET_MODE_ALL string = "ALL"
 
 const CONTEXT_PATH string = "github.com/aaronland/go-jsonl#path"
 
@@ -17,18 +14,8 @@ type WalkOptions struct {
 	ErrorChannel  chan *WalkError
 	ValidateJSON  bool
 	FormatJSON    bool
-	QuerySet      *WalkQuerySet
+	QuerySet      *query.QuerySet
 	IsBzip        bool
-}
-
-type WalkQuerySet struct {
-	Queries []*WalkQuery
-	Mode    string
-}
-
-type WalkQuery struct {
-	Path  string
-	Match *regexp.Regexp
 }
 
 type WalkRecord struct {
