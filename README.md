@@ -455,3 +455,4 @@ nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 * https://github.com/Smithsonian/OpenAccess
 * https://gocloud.dev/howto/blob/
 * https://github.com/aaronland/go-jsonl/
+* https://github.com/aaronland/go-json-query/
