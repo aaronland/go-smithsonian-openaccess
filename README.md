@@ -450,6 +450,42 @@ nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 ... and so on
 ```
 
+### location
+
+```
+$> ./bin/emit \
+	-bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
+
+   | ./bin/location
+
+edanmdm-nmah_715051,content.freetext.place,place made,"United States: New York, New York City"
+edanmdm-nmah_580165,content.freetext.place,place made,United States
+edanmdm-nmah_598790,content.freetext.place,place made,"United Kingdom: England, Longport"
+edanmdm-nmah_580114,content.freetext.place,place made,United States: New Jersey
+edanmdm-nmah_670543,content.freetext.place,place made,United States
+edanmdm-nmah_570097,content.freetext.place,place made,United Kingdom: England
+edanmdm-nmah_415366,content.freetext.place,place made,Germany
+...and so on
+edanmdm-nmah_383309,content.freetext.place,associated place,United States
+edanmdm-nmah_1957071,content.freetext.place,place made,Russia
+edanmdm-nmah_1957077,content.freetext.place,place made,Russia
+edanmdm-nmah_1957190,content.freetext.place,place made,Russia
+edanmdm-nmah_1408250,content.freetext.place,place made,"United States: District of Columbia, Washington"
+edanmdm-nmah_1321602,content.freetext.place,place made,"France: Île-de-France, Paris"
+```
+
+### placename
+
+```
+$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
+
+   | ./bin/location \
+   | ./bin/placename \
+   | wc -l
+   
+12164
+```
+
 ## See also
 
 * https://github.com/Smithsonian/OpenAccess
