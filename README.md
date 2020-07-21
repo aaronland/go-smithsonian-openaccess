@@ -14,6 +14,8 @@ To build binary versions of these tools run the `cli` Makefile target. For examp
 $> make cli
 go build -mod vendor -o bin/emit cmd/emit/main.go
 go build -mod vendor -o bin/findingaid cmd/findingaid/main.go
+go build -mod vendor -o bin/location cmd/location/main.go
+go build -mod vendor -o bin/placename cmd/placename/main.go
 ```
 
 ### emit
