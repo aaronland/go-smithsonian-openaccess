@@ -5,9 +5,10 @@ import (
 	"compress/bzip2"
 	"context"
 	"encoding/json"
+	"github.com/aaronland/go-json-query"
 	"github.com/tidwall/pretty"
-	"github.com/aaronland/go-json-query"	
 	"io"
+	_ "log"
 )
 
 func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
@@ -45,10 +46,6 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 
 		body, err := reader.ReadBytes('\n')
 
-		if err == io.EOF {
-			break
-		}
-
 		if err != nil {
 
 			e := &WalkError{
@@ -58,7 +55,12 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 			}
 
 			error_ch <- e
-			continue
+
+			if err == io.EOF {
+				break
+			} else {
+				continue
+			}
 		}
 
 		if opts.ValidateJSON {
@@ -104,7 +106,7 @@ func WalkReader(ctx context.Context, opts *WalkOptions, fh io.Reader) {
 					LineNumber: lineno,
 					Err:        err,
 				}
-				
+
 				error_ch <- e
 				continue
 			}

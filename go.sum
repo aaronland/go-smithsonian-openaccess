@@ -89,6 +89,8 @@ github.com/aaronland/go-jsonl v0.0.3 h1:CxTzaGNvzaEdHr7Hpr+yT0i6UcPuNGsdSpMPwPY5
 github.com/aaronland/go-jsonl v0.0.3/go.mod h1:GATx4VIGwXLxXjronhGsqNvcDrUbiPU3KPLtQ3PtW6M=
 github.com/aaronland/go-jsonl v0.0.5 h1:Gwhc5/wPpA/QGsRv/wXC15vZubyUtzbHb9VobGg8ZKo=
 github.com/aaronland/go-jsonl v0.0.5/go.mod h1:hnG6xP9SzDNRQgm5tY4OeJ5qhHwsDUt6W/IDQcabpw4=
+github.com/aaronland/go-jsonl v0.0.6 h1:9J4u/Y1/SIPjRjyUVBM3iv2DR//8Z+4qpB1FNnJ7kfQ=
+github.com/aaronland/go-jsonl v0.0.6/go.mod h1:hnG6xP9SzDNRQgm5tY4OeJ5qhHwsDUt6W/IDQcabpw4=
 github.com/aaronland/go-wunderkammer v0.0.1 h1:u7Mi6X8ULDv9cDjASUtX4Dv3dFTIqY0aVyqbjJl2dOI=
 github.com/aaronland/go-wunderkammer v0.0.1/go.mod h1:Bii4kJgWlEfeaKy5DTw2zVTfsQ3xb4HI4m00sXKtQc4=
 github.com/aaronland/openaccess-tools v0.0.0-20200625181341-806c2252b4b4 h1:/ezjpzL5jx77o8TzF0qIwGIkNNR10IGcXrwWhxZX12Y=

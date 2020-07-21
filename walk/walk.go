@@ -6,6 +6,7 @@ import (
 	jw "github.com/aaronland/go-jsonl/walk"
 	"gocloud.dev/blob"
 	_ "log"
+	_ "io"
 )
 
 type WalkOptions struct {
@@ -46,7 +47,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 			case <-ctx.Done():
 				return
 			case err := <-jw_error_ch:
-				cb(ctx, nil, err)
+				cb(ctx, nil, err)				
 			case rec := <-jw_record_ch:
 				cb(ctx, rec, nil)
 			default:
