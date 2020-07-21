@@ -452,7 +452,7 @@ nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 
 ### location
 
-A command-line tool for parsing line-delimited Smithsonian OpenAccess JSON files and emiting place data as a stream of CSV record.
+A command-line tool for parsing line-delimited Smithsonian OpenAccess JSON files and emiting place data as a stream of CSV records.
 
 ```
 > ./bin/location -h
