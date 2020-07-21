@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	uniq := flag.Bool("unique", true, "...")
+	uniq := flag.Bool("unique", true, "Only unique emit placename strings once.")
 
 	flag.Parse()
 

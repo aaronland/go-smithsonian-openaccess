@@ -452,6 +452,19 @@ nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 
 ### location
 
+A command-line tool for parsing line-delimited Smithsonian OpenAccess JSON files and emiting place data as a stream of CSV record.
+
+```
+> ./bin/location -h
+Usage of ./bin/location:
+  -null
+    	Emit to /dev/null
+  -stdout
+    	Emit to STDOUT (default true)
+```
+
+For example:
+
 ```
 $> ./bin/emit \
 	-bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
@@ -474,7 +487,27 @@ edanmdm-nmah_1408250,content.freetext.place,place made,"United States: District 
 edanmdm-nmah_1321602,content.freetext.place,place made,"France: Île-de-France, Paris"
 ```
 
+The column in the CSV output are:
+
+| Index | Value | Example |
+| --- | --- | --- |
+| 0 | OpenAccess record ID | edanmdm-nmah_715051 |
+| 1 | Path to the property used to lookup place data | content.freetext.place |
+| 2 | Label associated with place data | place made |
+| 3 | Place name | "United States: New York, New York City" |
+
 ### placename
+
+A command-line tool for extracting only placename data from a CSV stream produced by the `location` tool.
+
+```
+> ./bin/placename -h
+Usage of ./bin/placename:
+  -unique
+    	Only unique emit placename strings once. (default true)
+```
+
+For example:
 
 ```
 $> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
