@@ -513,10 +513,68 @@ For example:
 $> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
 
    | ./bin/location \
+   
    | ./bin/placename \
+   
    | wc -l
    
 12164
+```
+
+Or:
+
+```
+$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/ \
+
+   | ./bin/location \
+   
+   | ./bin/placename
+
+United States
+Washington (D.C.)
+Florida
+Miami (Fla.)
+France
+USA
+Italy
+Europe
+Italy or Spain
+France, Europe
+probably Venice, Italy
+Milan, Italy
+France or Italy
+Florence, Italy
+
+...time passes
+
+From top of pass to Hoja Verde., Tamaulipas, Mexico, North America
+Perto Dom Pedro II, Paraná, Brazil, South America
+Zealand: peat-bog at Søgärd., Denmark, Europe
+Tarumã Alta, 14 km NW of Manaus., Manaus, Brazil, South America - Neotropics
+Woods near Taxodium swamp, 2 miles south of Eagletown, McCurtain Co., Oklahoma, United States, North America
+Yarmouth County. Deep water of St. John (Wilson's) Lake., Nova Scotia, Canada, North America
+½ mi. S. Olivet., Osage, Kansas, United States, North America
+Range of low hills ca. 20 km west of Redenção, near Córrego São João and Troncamento Santa Teresa, Conceição do Araguaia, Brazil, South America - Neotropics
+Tatama. Santa Cecilia. Cordillera Occidental. Vertiente Occidental, Caldas, Colombia, South America - Neotropics
+San Rafael Ranch - on banky rivers. Cameron Co, Texas, United States, North America
+Sultanabad, Khorassan., Khorasan [obsolete], Iran, Asia-Temperate
+Pointe Du Lac, comte du St-Maurice: sur les sables du lac St-Pierre., Quebec, Canada, North America
+
+...2.5M records later
+
+Limburg
+Japão
+Lado Enclave (Congo Free State)
+Mauritanie
+Igboho (Nigeria)
+Accra Plains
+Hollywood (Fla.)
+Broward County (Fla.)
+GrÃ-Bretanha
+América latina
+Cousin
+Peace River Watershed (B.C. and Alta.)
+Peace River Watershed
 ```
 
 ## See also
