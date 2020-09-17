@@ -3,6 +3,7 @@ package query
 import (
 	"context"
 	"github.com/tidwall/gjson"
+	_ "log"
 	"regexp"
 )
 
@@ -22,12 +23,12 @@ type Query struct {
 func Matches(ctx context.Context, qs *QuerySet, body []byte) (bool, error) {
 
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return false, nil
 	default:
 		// pass
 	}
-		
+
 	queries := qs.Queries
 	mode := qs.Mode
 
@@ -47,28 +48,20 @@ func Matches(ctx context.Context, qs *QuerySet, body []byte) (bool, error) {
 
 		for _, r := range rsp.Array() {
 
-			has_match := true
+			if q.Match.MatchString(r.String()) {
 
-			if !q.Match.MatchString(r.String()) {
+				matches += 1
 
-				has_match = false
-
-				if mode == QUERYSET_MODE_ALL {
+				if mode == QUERYSET_MODE_ANY {
 					break
 				}
 			}
-
-			if !has_match {
-
-				if mode == QUERYSET_MODE_ALL {
-					break
-				}
-
-				continue
-			}
-
-			matches += 1
 		}
+
+		if mode == QUERYSET_MODE_ANY && matches > 0 {
+			break
+		}
+		
 	}
 
 	if mode == QUERYSET_MODE_ALL {
