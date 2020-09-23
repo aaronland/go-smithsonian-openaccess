@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 	"sync"
+	"log"
 )
 
 func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
@@ -26,6 +27,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
 
+		log.Println("WALK", prefix)
+		
 		select {
 		case <-ctx.Done():
 			return nil
@@ -52,9 +55,11 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 			if err == io.EOF {
 				break
 			}
-
+			
 			if err != nil {
 
+				log.Println("SAD", err)
+				
 				e := &WalkError{
 					Path:       prefix,
 					LineNumber: 0,
@@ -65,6 +70,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 				return nil
 			}
 
+			log.Println("OBJECT", obj.Key)
+			
 			if obj.IsDir {
 
 				err = walkFunc(ctx, bucket, obj.Key)

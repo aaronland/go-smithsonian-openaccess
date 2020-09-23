@@ -189,6 +189,7 @@ func main() {
 			FormatJSON:   *format_json,
 			ValidateJSON: *validate_json,
 			Callback:     cb,
+			IsBzip: false,
 		}
 
 		if len(queries) > 0 {

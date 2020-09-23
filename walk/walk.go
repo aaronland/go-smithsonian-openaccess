@@ -5,7 +5,6 @@ import (
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"gocloud.dev/blob"
-	_ "log"
 	_ "io"
 )
 
@@ -16,6 +15,7 @@ type WalkOptions struct {
 	FormatJSON   bool
 	QuerySet     *query.QuerySet
 	Callback     WalkRecordCallbackFunc
+	IsBzip bool
 }
 
 type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
@@ -38,6 +38,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 		FormatJSON:    opts.FormatJSON,
 		ValidateJSON:  opts.ValidateJSON,
 		QuerySet:      opts.QuerySet,
+		IsBzip: opts.IsBzip,
 	}
 
 	go func() {
