@@ -13,6 +13,7 @@ import (
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/s3blob"	
 	"io"
 	"io/ioutil"
 	"log"
