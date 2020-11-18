@@ -5,8 +5,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-json-query"
-	"github.com/aaronland/go-smithsonian-openaccess"	
 	jw "github.com/aaronland/go-jsonl/walk"
+	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	"io"
 	"path/filepath"
@@ -88,6 +88,10 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
+	// TO DO: create a new bucket where the root URI is simply
+	// openaccess.AWS_S3_URI so we don't have to do a bunch of
+	// URI/path checking below
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -95,8 +99,6 @@ func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) e
 	base := filepath.Base(uri)
 
 	switch base {
-	case "objects":
-		return WalkS3BucketForAll(ctx, opts, bucket)
 	case "metadata":
 		return WalkS3BucketForAll(ctx, opts, bucket)
 	default:
@@ -175,7 +177,8 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 
 	defer fh.Close()
 
-	// this is untested
+	// this is untested...
+
 	// cb := opts.Callback
 
 	jw_record_ch := make(chan *jw.WalkRecord)
