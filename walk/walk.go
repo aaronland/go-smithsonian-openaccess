@@ -42,6 +42,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 	*/
 
+	// FIX ME - make me a real test please
+
 	is_s3 := true
 
 	if is_s3 {
@@ -92,9 +94,6 @@ func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) e
 	// openaccess.AWS_S3_URI so we don't have to do a bunch of
 	// URI/path checking below
 
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	uri := opts.URI
 	base := filepath.Base(uri)
 
@@ -110,6 +109,13 @@ func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) e
 func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
 	for _, unit := range openaccess.SMITHSONIAN_UNITS {
+
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			// pass
+		}
 
 		err := WalkS3BucketForUnit(ctx, opts, bucket, unit)
 
@@ -167,6 +173,9 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 
 func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, uri string) error {
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	// FIX ME: uri is still a fully qualified URL
 
 	fh, err := bucket.NewReader(ctx, uri, nil)
@@ -179,7 +188,7 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 
 	// this is untested...
 
-	// cb := opts.Callback
+	cb := opts.Callback
 
 	jw_record_ch := make(chan *jw.WalkRecord)
 	jw_error_ch := make(chan *jw.WalkError)
@@ -194,6 +203,22 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 		QuerySet:      opts.QuerySet,
 		IsBzip:        opts.IsBzip,
 	}
+
+	go func() {
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case err := <-jw_error_ch:
+				cb(ctx, nil, err)
+			case rec := <-jw_record_ch:
+				cb(ctx, rec, nil)
+			default:
+				// pass
+			}
+		}
+	}()
 
 	jw.WalkReader(ctx, jw_opts, fh)
 	return nil
