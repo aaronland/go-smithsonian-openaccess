@@ -13,7 +13,7 @@ import (
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"	
+	_ "gocloud.dev/blob/s3blob"
 	"io"
 	"io/ioutil"
 	"log"
@@ -189,7 +189,7 @@ func main() {
 			FormatJSON:   *format_json,
 			ValidateJSON: *validate_json,
 			Callback:     cb,
-			IsBzip: false,
+			IsBzip:       false,
 		}
 
 		if len(queries) > 0 {
