@@ -10,7 +10,6 @@ import (
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
-	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
 	"io"
 	"io/ioutil"
@@ -25,7 +24,7 @@ import (
 
 func main() {
 
-	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket file:// URI.")
+	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
 	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
 
 	to_stdout := flag.Bool("stdout", true, "Emit to STDOUT")
@@ -60,7 +59,7 @@ func main() {
 
 	ctx := context.Background()
 
-	bucket, err := blob.OpenBucket(ctx, *bucket_uri)
+	ctx, bucket, err := openaccess.OpenBucket(ctx, *bucket_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to open bucket, %v", err)

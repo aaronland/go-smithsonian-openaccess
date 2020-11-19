@@ -25,7 +25,7 @@ A command-line tool for parsing and emitting individual records from a directory
 ```
 $> go run -mod vendor cmd/emit/main.go -h
   -bucket-uri string
-    	A valid GoCloud bucket file:// URI.
+    	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.
   -format-json
     	Format JSON output for each record.
   -json
@@ -325,7 +325,7 @@ A command-line tool for emitting a CSV document mapping individual record identi
 ```
 > go run -mod vendor cmd/findingaid/main.go -h
   -bucket-uri string
-    	A valid GoCloud bucket file:// URI.
+    	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.
   -csv-header
     	Include a CSV header row in the output (default true)
   -include-all
