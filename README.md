@@ -6,6 +6,40 @@ Go package for working with the Smithsonian Open Access release
 
 This is work in progress. Proper documentation to follow.
 
+## Data sources
+
+These tools support two types of data sources for the Smithsonian Open Access: A local file system and an AWS S3 bucket. Under the hood the code is using the GoCloud [blob](https://godoc.org/gocloud.dev/blob) abstraction layer so other [storage services](https://gocloud.dev/howto/blob/) could be supported but, as of this writing, they are not.
+
+Access to the data on a local file system is presumed to be from a checkout of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) GitHub repository. That repo has grown sufficiently large that [it can be difficult](https://github.com/Smithsonian/OpenAccess/issues/7) to successfully download a copy of the data.
+
+The data itself also lives in a Smithsonian-operated AWS S3 bucket so this code has been updated to retrieve data from there if asked to. For a number of reasons specific to the Smithsonian retrieving data from their S3 bucket does not fit neatly in to the `GoCloud` abstraction layer but efforts have been made to hide those details from users of this code.
+
+Most of the examples below assume a local Git checkout. For example:
+
+```
+$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH
+```
+
+In order to retrieve data from the Smithsonian-operated S3 bucket you would change the `-bucket-uri` flag to:
+
+```
+$> ./bin/emit -bucket-uri 's3://smithsonian-open-access?region=us-west-2' metadata/objects/NMAH
+```
+
+Or the following, which is included as a convenience method:
+
+```
+$> ./bin/emit -bucket-uri 'si://' metadata/objects/NMAH
+```
+
+A by-product of this work is that the code is also able to retrieve data from any other S3 bucket. For example:
+
+```
+$> ./bin/emit -bucket-uri 's3://YOUR-OPENACCESS-BUCKET?region=us-east-1' metadata/objects/NMAH
+```
+
+As of this writing the code to retrieve data from S3 buckets (other than the Smithsonian's) assumes that those buckets allow public access and have public directory listings enabled.
+
 ## Tools
 
 To build binary versions of these tools run the `cli` Makefile target. For example:
