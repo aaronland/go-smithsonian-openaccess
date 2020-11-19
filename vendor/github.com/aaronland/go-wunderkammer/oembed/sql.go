@@ -84,9 +84,25 @@ func (db *SQLOEmbedDatabase) AddOEmbed(ctx context.Context, rec *Photo) error {
 		return err
 	}
 
-	q := "INSERT OR REPLACE INTO oembed (url, object_uri, body) VALUES(?, ?, ?)"
+	has_data_url := 0
+	has_thumbnail := 0
+	has_thumbnail_data_url := 0
 
-	_, err = tx.ExecContext(ctx, q, url, object_uri, body)
+	if rec.DataURL != "" {
+		has_data_url = 1
+	}
+
+	if rec.ThumbnailURL != "" {
+		has_thumbnail = 1
+	}
+
+	if rec.ThumbnailDataURL != "" {
+		has_thumbnail_data_url = 1
+	}
+
+	q := "INSERT OR REPLACE INTO oembed (url, object_uri, body, has_data_url, has_thumbnail, has_thumbnail_data_url) VALUES(?, ?, ?, ?, ?, ?)"
+
+	_, err = tx.ExecContext(ctx, q, url, object_uri, body, has_data_url, has_thumbnail, has_thumbnail_data_url)
 
 	if err != nil {
 		tx.Rollback()

@@ -32,22 +32,6 @@ type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
 
 func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
-	/*
-
-		because this: https://github.com/Smithsonian/OpenAccess/issues/7
-
-		if bucket scheme is s3:// then:
-
-		if uri is objects or objects/metdata then:
-
-		loop over list of SI units and invoke code for reading index.txt (below)
-
-		else:
-
-		fetch uri/index.txt and loop over each file handing off to default code
-
-	*/
-
 	// FIX ME - make me a real test please
 
 	is_s3 := true
@@ -96,8 +80,8 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
-	// TO DO: create a new bucket where the root URI is simply
-	// openaccess.AWS_S3_URI so we don't have to do a bunch of
+	// create a new bucket where the root URI is simply
+	// openaccess.AWS_S3_BUCKET so we don't have to do a bunch of
 	// URI/path checking below
 
 	sess, err := session.NewSession(&aws.Config{
@@ -152,6 +136,58 @@ func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Buc
 
 func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
 
+	// https://github.com/Smithsonian/OpenAccess/issues/7#issuecomment-696833714
+
+	digits := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	letters := []string{"a", "b", "c", "d", "e", "f"}
+
+	files := make([]string, 0)
+
+	for _, first := range digits {
+
+		for _, second := range digits {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+
+		for _, second := range letters {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+	}
+
+	for _, first := range letters {
+
+		for _, second := range digits {
+
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+
+		for _, second := range letters {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+	}
+
+	unit = strings.ToLower(unit)
+
+	for _, fname := range files {
+
+		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
+
+		err := WalkS3Record(ctx, opts, bucket, uri)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
+
 	unit = strings.ToLower(unit)
 	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
 
@@ -187,7 +223,7 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 
 		uri = strings.TrimSpace(uri)
 		uri = strings.Replace(uri, openaccess.AWS_S3_URI, "", 1)
-		
+
 		fmt.Println(uri)
 		continue
 
@@ -213,8 +249,6 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 	}
 
 	defer fh.Close()
-
-	// this is untested...
 
 	cb := opts.Callback
 
