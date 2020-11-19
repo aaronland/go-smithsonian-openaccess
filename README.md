@@ -8,7 +8,7 @@ This is work in progress. Proper documentation to follow.
 
 ## Data sources
 
-These tools support two types of data sources for the Smithsonian Open Access: A local file system and an AWS S3 bucket. Under the hood the code is using the GoCloud [blob](https://godoc.org/gocloud.dev/blob) abstraction layer so other [storage services](https://gocloud.dev/howto/blob/) could be supported but, as of this writing, they are not.
+This package and the tools it exports support two types of data sources for the Smithsonian Open Access: A local file system and an AWS S3 bucket. Under the hood the code is using the GoCloud [blob](https://godoc.org/gocloud.dev/blob) abstraction layer so other [storage services](https://gocloud.dev/howto/blob/) could be supported but currently they are not.
 
 Access to the data on a local file system is presumed to be from a checkout of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) GitHub repository. That repo has grown sufficiently large that [it can be difficult](https://github.com/Smithsonian/OpenAccess/issues/7) to successfully download a copy of the data.
 
