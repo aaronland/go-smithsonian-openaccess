@@ -33,6 +33,12 @@ type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
 
 func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
+	// Because the GitHub repo is too large to check out we want
+	// to be able to query the corresponding S3 bucket with the same
+	// files but since those buckets disallow directory listings we
+	// need do things outside the normal bucket.List abstraction
+	// (20201119/straup)
+	
 	var s3_bucket *s3.S3
 
 	if bucket.As(&s3_bucket) {
@@ -184,6 +190,9 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 
 	return nil
 }
+
+// deprecated - keeping it around for a bit just in case
+// (20201119/straup)
 
 func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
 
