@@ -119,6 +119,8 @@ func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) e
 	switch base {
 	case "metadata":
 		return WalkS3BucketForAll(ctx, opts, bucket)
+	case "objects":
+		return WalkS3BucketForAll(ctx, opts, bucket)
 	default:
 		return WalkS3BucketForUnit(ctx, opts, bucket, base)
 	}
