@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
 	"io"
@@ -32,11 +33,9 @@ type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
 
 func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
-	// FIX ME - make me a real test please
+	var s3_bucket *s3.S3
 
-	is_s3 := true
-
-	if is_s3 {
+	if bucket.As(&s3_bucket) {
 		return WalkS3Bucket(ctx, opts, bucket)
 	}
 
