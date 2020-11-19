@@ -7,9 +7,15 @@ import (
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
+	"gocloud.dev/blob/s3blob"
 	"io"
+	_ "log"
 	"path/filepath"
+	"strings"
 )
 
 type WalkOptions struct {
@@ -94,6 +100,23 @@ func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) e
 	// openaccess.AWS_S3_URI so we don't have to do a bunch of
 	// URI/path checking below
 
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(openaccess.AWS_S3_REGION),
+		Credentials: credentials.AnonymousCredentials,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	new_bucket, err := s3blob.OpenBucket(ctx, sess, openaccess.AWS_S3_BUCKET, nil)
+
+	if err != nil {
+		return err
+	}
+
+	bucket = new_bucket
+
 	uri := opts.URI
 	base := filepath.Base(uri)
 
@@ -129,7 +152,8 @@ func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Buc
 
 func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
 
-	index := fmt.Sprintf("metadata/%s/index.txt", unit)
+	unit = strings.ToLower(unit)
+	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
 
 	fh, err := bucket.NewReader(ctx, index, nil)
 
@@ -161,6 +185,12 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 			}
 		}
 
+		uri = strings.TrimSpace(uri)
+		uri = strings.Replace(uri, openaccess.AWS_S3_URI, "", 1)
+		
+		fmt.Println(uri)
+		continue
+
 		err = WalkS3Record(ctx, opts, bucket, uri)
 
 		if err != nil {
@@ -175,8 +205,6 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	// FIX ME: uri is still a fully qualified URL
 
 	fh, err := bucket.NewReader(ctx, uri, nil)
 
