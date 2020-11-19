@@ -1,7 +1,6 @@
 package walk
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/aaronland/go-json-query"
@@ -10,11 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	_ "github.com/aws/aws-sdk-go/service/s3"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
-	"io"
-	"log"
 	"path/filepath"
 	"strings"
 )
@@ -193,61 +189,6 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 		err := WalkS3Record(ctx, opts, bucket, uri)
 
 		if err != nil {
-			log.Println("WUB", uri, err)
-			return err
-		}
-	}
-
-	return nil
-}
-
-// deprecated - keeping it around for a bit just in case
-// (20201119/straup)
-
-func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
-
-	unit = strings.ToLower(unit)
-	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
-
-	fh, err := bucket.NewReader(ctx, index, nil)
-
-	if err != nil {
-		return err
-	}
-
-	defer fh.Close()
-
-	reader := bufio.NewReader(fh)
-
-	for {
-
-		select {
-		case <-ctx.Done():
-			break
-		default:
-			// pass
-		}
-
-		uri, err := reader.ReadString('\n')
-
-		if err != nil {
-
-			if err == io.EOF {
-				break
-			} else {
-				continue
-			}
-		}
-
-		uri = strings.TrimSpace(uri)
-		uri = strings.Replace(uri, openaccess.AWS_S3_URI, "", 1)
-
-		fmt.Println(uri)
-		continue
-
-		err = WalkS3Record(ctx, opts, bucket, uri)
-
-		if err != nil {
 			return err
 		}
 	}
@@ -303,3 +244,61 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 	jw.WalkReader(ctx, jw_opts, fh)
 	return nil
 }
+
+// deprecated - keeping it around for a bit just in case
+// (20201119/straup)
+
+/*
+
+func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
+
+	unit = strings.ToLower(unit)
+	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
+
+	fh, err := bucket.NewReader(ctx, index, nil)
+
+	if err != nil {
+		return err
+	}
+
+	defer fh.Close()
+
+	reader := bufio.NewReader(fh)
+
+	for {
+
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			// pass
+		}
+
+		uri, err := reader.ReadString('\n')
+
+		if err != nil {
+
+			if err == io.EOF {
+				break
+			} else {
+				continue
+			}
+		}
+
+		uri = strings.TrimSpace(uri)
+		uri = strings.Replace(uri, openaccess.AWS_S3_URI, "", 1)
+
+		fmt.Println(uri)
+		continue
+
+		err = WalkS3Record(ctx, opts, bucket, uri)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+*/
