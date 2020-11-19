@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
+	_ "github.com/aws/aws-sdk-go/service/s3"
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
 	"io"
@@ -39,9 +39,16 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 	// need do things outside the normal bucket.List abstraction
 	// (20201119/straup)
 
-	var s3_bucket *s3.S3
+	// This is what we used to do but it precludes fetching data from another
+	// S3 bucket so instead we are assigning openaccess.IS_SMITHSONIAN_S3 in
+	// the openaccess.OpenBucket method (20201119/straup)
 
-	if bucket.As(&s3_bucket) {
+	// var s3_bucket *s3.S3
+	// if bucket.As(&s3_bucket) {
+
+	v := ctx.Value(openaccess.IS_SMITHSONIAN_S3)
+
+	if v != nil && v.(bool) == true {
 		return WalkS3Bucket(ctx, opts, bucket)
 	}
 
