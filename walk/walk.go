@@ -45,7 +45,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 	v := ctx.Value(openaccess.IS_SMITHSONIAN_S3)
 
 	if v != nil && v.(bool) == true {
-		return WalkS3Bucket(ctx, opts, bucket)
+		return WalkSmithsonianBucket(ctx, opts, bucket)
 	}
 
 	ctx, cancel := context.WithCancel(ctx)

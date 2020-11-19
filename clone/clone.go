@@ -71,31 +71,7 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 			// do this concurrently in a go routine
 
-			source_fh, err := source_bucket.NewReader(ctx, obj.Key, nil)
-
-			if err != nil {
-				return err
-			}
-
-			defer source_fh.Close()
-
-			target_fh, err := target_bucket.NewWriter(ctx, obj.Key, nil)
-
-			if err != nil {
-				return err
-			}
-
-			_, err = io.Copy(target_fh, source_fh)
-
-			if err != nil {
-				return err
-			}
-
-			err = target_fh.Close()
-
-			if err != nil {
-				return err
-			}
+			return cloneObject(ctx, source_bucket, target_bucket, obj.Key)
 		}
 
 		return nil
@@ -107,5 +83,130 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 }
 
 func CloneSmithsonianBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
+	return nil
+
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(openaccess.AWS_S3_REGION),
+		Credentials: credentials.AnonymousCredentials,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	new_bucket, err := s3blob.OpenBucket(ctx, sess, openaccess.AWS_S3_BUCKET, nil)
+
+	if err != nil {
+		return err
+	}
+
+	source_bucket = new_bucket
+
+	for _, unit := range openaccess.SMITHSONIAN_UNITS {
+
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			// pass
+		}
+
+		err := CloneBucketForUnit(ctx, opts, bucket, unit)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CloneBucketForUnit(ctx context.Context, source_bucket *blob.Bucket, target_bucket *blob.Bucket, unit string) error {
+
+	// https://github.com/Smithsonian/OpenAccess/issues/7#issuecomment-696833714
+
+	digits := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	letters := []string{"a", "b", "c", "d", "e", "f"}
+
+	files := make([]string, 0)
+
+	for _, first := range digits {
+
+		for _, second := range digits {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+
+		for _, second := range letters {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+	}
+
+	for _, first := range letters {
+
+		for _, second := range digits {
+
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+
+		for _, second := range letters {
+			fname := fmt.Sprintf("%s%s.txt", first, second)
+			files = append(files, fname)
+		}
+	}
+
+	unit = strings.ToLower(unit)
+
+	for _, fname := range files {
+
+		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
+
+		err := clone(ctx, source_bucket, target_bucket, uri)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func cloneObject(ctx context.Context, source_bucket *blob.Bucket, target_bucket *blob.Bucket, uri string) error {
+
+	select {
+	case <-ctx.Done():
+		return nil
+	default:
+		//
+	}
+
+	source_fh, err := source_bucket.NewReader(ctx, uri, nil)
+
+	if err != nil {
+		return err
+	}
+
+	defer source_fh.Close()
+
+	target_fh, err := target_bucket.NewWriter(ctx, uri, nil)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(target_fh, source_fh)
+
+	if err != nil {
+		return err
+	}
+
+	err = target_fh.Close()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
