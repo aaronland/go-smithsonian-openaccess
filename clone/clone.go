@@ -2,6 +2,7 @@ package clone
 
 import (
 	"context"
+	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	"io"
 )
@@ -13,8 +14,14 @@ type CloneOptions struct {
 
 func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
 
+	v := ctx.Value(openaccess.IS_SMITHSONIAN_S3)
+
+	if v != nil && v.(bool) == true {
+		return CloneSmithsonianBucket(ctx, opts, source_bucket, target_bucket)
+	}
+
 	// something something something clone Smithsonian S3 bucket something something something
-	
+
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
 	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
@@ -63,7 +70,7 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 			}
 
 			// do this concurrently in a go routine
-			
+
 			source_fh, err := source_bucket.NewReader(ctx, obj.Key, nil)
 
 			if err != nil {
@@ -96,5 +103,9 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 	walkFunc(ctx, source_bucket, opts.URI)
 
+	return nil
+}
+
+func CloneSmithsonianBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
 	return nil
 }
