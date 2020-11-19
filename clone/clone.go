@@ -13,6 +13,8 @@ type CloneOptions struct {
 
 func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
 
+	// something something something clone Smithsonian S3 bucket something something something
+	
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
 	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
@@ -60,6 +62,8 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 				continue
 			}
 
+			// do this concurrently in a go routine
+			
 			source_fh, err := source_bucket.NewReader(ctx, obj.Key, nil)
 
 			if err != nil {
