@@ -14,7 +14,7 @@ import (
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"
 	"io"
-	_ "log"
+	"log"
 	"path/filepath"
 	"strings"
 )
@@ -38,7 +38,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 	// files but since those buckets disallow directory listings we
 	// need do things outside the normal bucket.List abstraction
 	// (20201119/straup)
-	
+
 	var s3_bucket *s3.S3
 
 	if bucket.As(&s3_bucket) {
@@ -184,6 +184,7 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 		err := WalkS3Record(ctx, opts, bucket, uri)
 
 		if err != nil {
+			log.Println("WUB", uri, err)
 			return err
 		}
 	}

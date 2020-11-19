@@ -128,6 +128,11 @@ func main() {
 	cb := func(ctx context.Context, rec *jw.WalkRecord, err error) error {
 
 		if err != nil {
+
+			if jw.IsEOFError(err) {
+				return nil
+			}
+
 			log.Println(err)
 			return err
 		}

@@ -93,6 +93,8 @@ github.com/aaronland/go-jsonl v0.0.5 h1:Gwhc5/wPpA/QGsRv/wXC15vZubyUtzbHb9VobGg8
 github.com/aaronland/go-jsonl v0.0.5/go.mod h1:hnG6xP9SzDNRQgm5tY4OeJ5qhHwsDUt6W/IDQcabpw4=
 github.com/aaronland/go-jsonl v0.0.6 h1:9J4u/Y1/SIPjRjyUVBM3iv2DR//8Z+4qpB1FNnJ7kfQ=
 github.com/aaronland/go-jsonl v0.0.6/go.mod h1:hnG6xP9SzDNRQgm5tY4OeJ5qhHwsDUt6W/IDQcabpw4=
+github.com/aaronland/go-jsonl v0.0.7 h1:c+w3AfH69ifFJqrC/xwIiBM4QMMdpM04UvEWzC6WmyM=
+github.com/aaronland/go-jsonl v0.0.7/go.mod h1:51YTlORlJ5IhY8UOAGDSqxRqyO+c0/OVCYcxJ5joRXY=
 github.com/aaronland/go-wunderkammer v0.0.1 h1:u7Mi6X8ULDv9cDjASUtX4Dv3dFTIqY0aVyqbjJl2dOI=
 github.com/aaronland/go-wunderkammer v0.0.1/go.mod h1:Bii4kJgWlEfeaKy5DTw2zVTfsQ3xb4HI4m00sXKtQc4=
 github.com/aaronland/go-wunderkammer v0.0.8 h1:Tteb6riIqBClbG+ZSDQma1gzsQEdyOitLE14ZRl7/5s=

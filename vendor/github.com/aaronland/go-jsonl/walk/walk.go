@@ -3,6 +3,7 @@ package walk
 import (
 	"fmt"
 	"github.com/aaronland/go-json-query"
+	"io"
 )
 
 const CONTEXT_PATH string = "github.com/aaronland/go-jsonl#path"
@@ -36,4 +37,19 @@ func (e *WalkError) Error() string {
 
 func (e *WalkError) String() string {
 	return fmt.Sprintf("[%s] line %d, %v", e.Path, e.LineNumber, e.Err)
+}
+
+func IsEOFError(err error) bool {
+
+	switch err.(type) {
+	case *WalkError:
+
+		if err.(*WalkError).Err == io.EOF {
+			return true
+		}
+
+		return false
+	default:
+		return false
+	}
 }
