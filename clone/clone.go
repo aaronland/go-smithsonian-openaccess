@@ -6,7 +6,9 @@ import (
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	"io"
+	"log"
 	"strings"
+	"sync"
 )
 
 type CloneOptions struct {
@@ -21,8 +23,6 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 	if v != nil && v.(bool) == true {
 		return CloneSmithsonianBucket(ctx, opts, source_bucket, target_bucket)
 	}
-
-	// something something something clone Smithsonian S3 bucket something something something
 
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
@@ -107,19 +107,37 @@ func CloneSmithsonianBucket(ctx context.Context, opts *CloneOptions, source_buck
 
 func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket, unit string) error {
 
+	throttle := make(chan bool, opts.Workers)
+
+	for i := 0; i < opts.Workers; i++ {
+		throttle <- true
+	}
+
+	wg := new(sync.WaitGroup)
+
 	unit = strings.ToLower(unit)
 
 	for _, fname := range openaccess.SMITHSONIAN_DATA_FILES {
 
+		<-throttle
+		wg.Add(1)
+
 		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
 
-		err := cloneObject(ctx, source_bucket, target_bucket, uri)
+		go func(uri string) {
 
-		if err != nil {
-			return err
-		}
+			defer func() {
+				wg.Done()
+				throttle <- true
+			}()
+
+			err := cloneObject(ctx, source_bucket, target_bucket, uri)
+
+			log.Println(err)
+		}(uri)
 	}
 
+	wg.Wait()
 	return nil
 }
 
@@ -130,6 +148,21 @@ func cloneObject(ctx context.Context, source_bucket *blob.Bucket, target_bucket 
 		return nil
 	default:
 		//
+	}
+
+	target_attrs, err := target_bucket.Attributes(ctx, uri)
+
+	if err == nil {
+
+		source_attrs, err := source_bucket.Attributes(ctx, uri)
+
+		if err != nil {
+			return err
+		}
+
+		if string(target_attrs.MD5) == string(source_attrs.MD5) {
+			return nil
+		}
 	}
 
 	source_fh, err := source_bucket.NewReader(ctx, uri, nil)
