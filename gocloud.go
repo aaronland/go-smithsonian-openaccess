@@ -3,7 +3,11 @@ package openaccess
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
+	"gocloud.dev/blob/s3blob"
 	_ "log"
 	"net/url"
 )
@@ -40,12 +44,38 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 		// pass
 	}
 
-	b, err := blob.OpenBucket(ctx, uri)
+	var bucket *blob.Bucket
 
-	if err != nil {
-		return nil, nil, err
+	if is_smithsonian_s3 {
+
+		sess, err := session.NewSession(&aws.Config{
+			Region:      aws.String(AWS_S3_REGION),
+			Credentials: credentials.AnonymousCredentials,
+		})
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		b, err := s3blob.OpenBucket(ctx, sess, AWS_S3_BUCKET, nil)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		bucket = b
+
+	} else {
+
+		b, err := blob.OpenBucket(ctx, uri)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		bucket = b
 	}
 
 	ctx = context.WithValue(ctx, IS_SMITHSONIAN_S3, is_smithsonian_s3)
-	return ctx, b, nil
+	return ctx, bucket, nil
 }

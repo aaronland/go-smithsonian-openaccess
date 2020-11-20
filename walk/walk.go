@@ -6,11 +6,7 @@ import (
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"gocloud.dev/blob"
-	"gocloud.dev/blob/s3blob"
 	"path/filepath"
 	"strings"
 )
@@ -86,44 +82,23 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 	return jw.WalkBucket(ctx, jw_opts, bucket)
 }
 
-func WalkS3Bucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
-
-	// create a new bucket where the root URI is simply
-	// openaccess.AWS_S3_BUCKET so we don't have to do a bunch of
-	// URI/path checking below
-
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(openaccess.AWS_S3_REGION),
-		Credentials: credentials.AnonymousCredentials,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	new_bucket, err := s3blob.OpenBucket(ctx, sess, openaccess.AWS_S3_BUCKET, nil)
-
-	if err != nil {
-		return err
-	}
-
-	bucket = new_bucket
+func WalkSmithsonianBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
 	uri := opts.URI
 	base := filepath.Base(uri)
 
 	switch base {
 	case "metadata":
-		return WalkS3BucketForAll(ctx, opts, bucket)
+		return WalkSmithsonianBucketForAll(ctx, opts, bucket)
 	case "objects":
-		return WalkS3BucketForAll(ctx, opts, bucket)
+		return WalkSmithsonianBucketForAll(ctx, opts, bucket)
 	default:
-		return WalkS3BucketForUnit(ctx, opts, bucket, base)
+		return WalkSmithsonianBucketForUnit(ctx, opts, bucket, base)
 	}
 
 }
 
-func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
+func WalkSmithsonianBucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
 
 	for _, unit := range openaccess.SMITHSONIAN_UNITS {
 
@@ -134,7 +109,7 @@ func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Buc
 			// pass
 		}
 
-		err := WalkS3BucketForUnit(ctx, opts, bucket, unit)
+		err := WalkSmithsonianBucketForUnit(ctx, opts, bucket, unit)
 
 		if err != nil {
 			return err
@@ -144,49 +119,15 @@ func WalkS3BucketForAll(ctx context.Context, opts *WalkOptions, bucket *blob.Buc
 	return nil
 }
 
-func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
-
-	// https://github.com/Smithsonian/OpenAccess/issues/7#issuecomment-696833714
-
-	digits := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
-	letters := []string{"a", "b", "c", "d", "e", "f"}
-
-	files := make([]string, 0)
-
-	for _, first := range digits {
-
-		for _, second := range digits {
-			fname := fmt.Sprintf("%s%s.txt", first, second)
-			files = append(files, fname)
-		}
-
-		for _, second := range letters {
-			fname := fmt.Sprintf("%s%s.txt", first, second)
-			files = append(files, fname)
-		}
-	}
-
-	for _, first := range letters {
-
-		for _, second := range digits {
-
-			fname := fmt.Sprintf("%s%s.txt", first, second)
-			files = append(files, fname)
-		}
-
-		for _, second := range letters {
-			fname := fmt.Sprintf("%s%s.txt", first, second)
-			files = append(files, fname)
-		}
-	}
+func WalkSmithsonianBucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
 
 	unit = strings.ToLower(unit)
 
-	for _, fname := range files {
+	for _, fname := range openaccess.SMITHSONIAN_DATA_FILES {
 
 		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
 
-		err := WalkS3Record(ctx, opts, bucket, uri)
+		err := WalkSmithsonianRecord(ctx, opts, bucket, uri)
 
 		if err != nil {
 			return err
@@ -196,7 +137,7 @@ func WalkS3BucketForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bu
 	return nil
 }
 
-func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, uri string) error {
+func WalkSmithsonianRecord(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, uri string) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -250,7 +191,7 @@ func WalkS3Record(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, u
 
 /*
 
-func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
+func WalkSmithsonianBucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
 
 	unit = strings.ToLower(unit)
 	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
@@ -291,7 +232,7 @@ func WalkS3BucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket
 		fmt.Println(uri)
 		continue
 
-		err = WalkS3Record(ctx, opts, bucket, uri)
+		err = WalkSmithsonianRecord(ctx, opts, bucket, uri)
 
 		if err != nil {
 			return err
