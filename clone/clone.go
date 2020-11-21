@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"strings"
-	"sync"
 )
 
 type CloneOptions struct {
@@ -113,35 +112,65 @@ func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, sour
 		throttle <- true
 	}
 
-	wg := new(sync.WaitGroup)
-
 	unit = strings.ToLower(unit)
+
+	remaining := 0
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	err_ch := make(chan error)
+	done_ch := make(chan bool)
 
 	for _, fname := range openaccess.SMITHSONIAN_DATA_FILES {
 
+		remaining += 1
 		<-throttle
-		wg.Add(1)
 
 		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
 
 		go func(uri string) {
 
 			defer func() {
-				wg.Done()
 				throttle <- true
+				done_ch <- true
 			}()
+
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				// pass
+			}
 
 			err := cloneObject(ctx, source_bucket, target_bucket, uri)
 
-			log.Println(err)
+			if err != nil {
+				err_ch <- err
+			}
+
 		}(uri)
 	}
 
-	wg.Wait()
+	for remaining > 0 {
+
+		select {
+		case <-done_ch:
+			remaining -= 1
+		case err := <-err_ch:
+			return err
+		default:
+			// pass
+		}
+	}
+
 	return nil
 }
 
 func cloneObject(ctx context.Context, source_bucket *blob.Bucket, target_bucket *blob.Bucket, uri string) error {
+
+	log.Println("Clone", uri)
+	return nil
 
 	select {
 	case <-ctx.Done():
