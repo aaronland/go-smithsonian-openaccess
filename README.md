@@ -75,7 +75,11 @@ Usage of ./bin/clone:
 For example:
 
 ```
-$> ./bin/clone  -source-bucket-uri si:// -target-bucket-uri file:///tmp metadata/chndm
+$> ./bin/clone \
+	-source-bucket-uri si:// \
+	-target-bucket-uri file:///tmp \
+	metadata/chndm
+	
 ...time passes
 
 $> ls -al /tmp/metadata/edan/chndm/*.txt 
@@ -90,10 +94,36 @@ $> ls -al /tmp/metadata/edan/chndm/*.txt
 -rw-------  1 user  wheel   510866 Nov 21 11:31 /tmp/metadata/edan/chndm/ff.txt
 ```
 
+Or:
+
+```
+$> ./bin/clone \
+	-source-bucket-uri file:///tmp \
+	-target-bucket-uri file:///tmp/debug \
+	metadata/edan/chndm
+	
+...less time passes
+
+$> ls -al /tmp/debug/metadata/edan/chndm/*.txt 
+-rw-------  1 user  wheel   571870 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/00.txt
+-rw-------  1 user  wheel   569577 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/01.txt
+-rw-------  1 user  wheel   492463 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/02.txt
+-rw-------  1 user  wheel   480150 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/03.txt
+-rw-------  1 user  wheel   647755 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/04.txt
+...
+-rw-------  1 user  wheel   491210 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/fd.txt
+-rw-------  1 user  wheel   622405 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/fe.txt
+-rw-------  1 user  wheel   510866 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/ff.txt
+```
+
 And then later on:
 
 ```
-$> ./bin/emit -json -format-json -bucket-uri file:///tmp/metadata/edan chndm
+$> ./bin/emit \
+	-json \
+	-format-json \
+	-bucket-uri file:///tmp/metadata/edan \
+	chndm
 
 [{
   "id": "edanmdm-chndm_1931-45-37",

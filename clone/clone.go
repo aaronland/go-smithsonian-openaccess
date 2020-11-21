@@ -6,9 +6,10 @@ import (
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	"io"
-	"log"
+	_ "log"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type CloneOptions struct {
@@ -41,8 +42,6 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
 
-		log.Println("WALK", prefix)
-		
 		select {
 		case <-ctx.Done():
 			return nil
@@ -55,6 +54,8 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 			Prefix:    prefix,
 		})
 
+		wg := new(sync.WaitGroup)
+
 		for {
 
 			select {
@@ -66,25 +67,23 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 			obj, err := iter.Next(ctx)
 
-			log.Println("NEXT", obj, err)
-			
 			if err == io.EOF {
-				log.Println("EOF")
 				break
 			}
 
 			if err != nil {
-				log.Println("ERR")
 				return err
 			}
 
-			log.Println("OBJ", obj)
 			<-throttle
+
+			wg.Add(1)
 
 			go func(obj *blob.ListObject) {
 
 				defer func() {
 					throttle <- true
+					wg.Done()
 				}()
 
 				select {
@@ -115,15 +114,14 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 			}(obj)
 		}
 
-		log.Println("DONE")
+		wg.Wait()
 		return nil
 	}
 
 	go func() {
 
 		err := walkFunc(ctx, source_bucket, opts.URI)
-	
-		log.Println("WALK", err)	
+
 		if err != nil {
 			err_ch <- err
 		}
@@ -244,8 +242,6 @@ func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, sour
 
 func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket, uri string) error {
 
-	log.Println("CLONE", uri)
-	
 	select {
 	case <-ctx.Done():
 		return nil
