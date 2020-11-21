@@ -142,7 +142,7 @@ $> ./bin/emit \
 
 #### Notes
 
-* If no optionalal URI or URIs (for example `metadata/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
+* If no extra URI or URIs (for example `metadata/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
 
 * Under the hood this code is using the [GoCloud blob abstraction layer](https://gocloud.dev/howto/blob/). The default behaviour for the abstraction is to assume restrictive permissions when creating new files. Unfortunately, as of this writing, there is no common way for assigning permissions using the `GoCloud blob` abstraction so this is something you'll need to account for separately from this tool.
 
