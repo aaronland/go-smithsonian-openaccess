@@ -23,6 +23,18 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 		return CloneSmithsonianBucket(ctx, opts, source_bucket, target_bucket)
 	}
 
+	throttle := make(chan bool, opts.Workers)
+
+	for i := 0; i < opts.Workers; i++ {
+		throttle <- true
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	err_ch := make(chan error)
+	done_ch := make(chan bool)
+
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
 	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
@@ -55,30 +67,67 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 			}
 
 			if err != nil {
-
 				return err
 			}
 
-			if obj.IsDir {
+			<-throttle
 
-				err = walkFunc(ctx, bucket, obj.Key)
+			go func(obj *blob.ListObject) {
 
-				if err != nil {
-					return err
+				defer func() {
+					throttle <- true
+				}()
+
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					// pass
 				}
 
-				continue
-			}
+				if obj.IsDir {
 
-			// do this concurrently in a go routine
+					err = walkFunc(ctx, bucket, obj.Key)
 
-			return cloneObject(ctx, source_bucket, target_bucket, obj.Key)
+					if err != nil {
+						err_ch <- err
+					}
+
+					return
+				}
+
+				err := cloneObject(ctx, source_bucket, target_bucket, obj.Key)
+
+				if err != nil {
+					err_ch <- err
+					return
+				}
+
+			}(obj)
 		}
 
 		return nil
 	}
 
-	walkFunc(ctx, source_bucket, opts.URI)
+	go func() {
+
+		err := walkFunc(ctx, source_bucket, opts.URI)
+
+		if err != nil {
+			err_ch <- err
+		}
+
+		done_ch <- true
+	}()
+
+	for {
+		select {
+		case <-done_ch:
+			break
+		case err := <-err_ch:
+			return err
+		}
+	}
 
 	return nil
 }
