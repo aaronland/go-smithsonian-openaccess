@@ -138,7 +138,8 @@ $> ./bin/emit \
         "mediaCount": 1,
   ...and so on
 }]
-  
+```
+
 #### Notes
 
 * If no optionalal URI or URIs (for example `metadata/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
