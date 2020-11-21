@@ -6,13 +6,15 @@ import (
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	"io"
-	"log"
+	_ "log"
+	"path/filepath"
 	"strings"
 )
 
 type CloneOptions struct {
 	URI     string
 	Workers int
+	Force   bool
 }
 
 func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
@@ -96,7 +98,7 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 					return
 				}
 
-				err := cloneObject(ctx, source_bucket, target_bucket, obj.Key)
+				err := cloneObject(ctx, opts, source_bucket, target_bucket, obj.Key)
 
 				if err != nil {
 					err_ch <- err
@@ -133,6 +135,21 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 }
 
 func CloneSmithsonianBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
+
+	uri := opts.URI
+	base := filepath.Base(uri)
+
+	switch base {
+	case "metadata":
+		return CloneSmithsonianBucketForAll(ctx, opts, source_bucket, target_bucket)
+	case "objects":
+		return CloneSmithsonianBucketForAll(ctx, opts, source_bucket, target_bucket)
+	default:
+		return CloneSmithsonianBucketForUnit(ctx, opts, source_bucket, target_bucket, base)
+	}
+}
+
+func CloneSmithsonianBucketForAll(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
 
 	for _, unit := range openaccess.SMITHSONIAN_UNITS {
 
@@ -192,7 +209,7 @@ func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, sour
 				// pass
 			}
 
-			err := cloneObject(ctx, source_bucket, target_bucket, uri)
+			err := cloneObject(ctx, opts, source_bucket, target_bucket, uri)
 
 			if err != nil {
 				err_ch <- err
@@ -216,10 +233,7 @@ func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, sour
 	return nil
 }
 
-func cloneObject(ctx context.Context, source_bucket *blob.Bucket, target_bucket *blob.Bucket, uri string) error {
-
-	log.Println("Clone", uri)
-	return nil
+func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket, uri string) error {
 
 	select {
 	case <-ctx.Done():
@@ -228,18 +242,21 @@ func cloneObject(ctx context.Context, source_bucket *blob.Bucket, target_bucket 
 		//
 	}
 
-	target_attrs, err := target_bucket.Attributes(ctx, uri)
+	if !opts.Force {
 
-	if err == nil {
+		target_attrs, err := target_bucket.Attributes(ctx, uri)
 
-		source_attrs, err := source_bucket.Attributes(ctx, uri)
+		if err == nil {
 
-		if err != nil {
-			return err
-		}
+			source_attrs, err := source_bucket.Attributes(ctx, uri)
 
-		if string(target_attrs.MD5) == string(source_attrs.MD5) {
-			return nil
+			if err != nil {
+				return err
+			}
+
+			if string(target_attrs.MD5) == string(source_attrs.MD5) {
+				return nil
+			}
 		}
 	}
 

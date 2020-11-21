@@ -13,11 +13,12 @@ import (
 
 func main() {
 
-	source_bucket_uri := flag.String("source-bucket-uri", "", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
+	source_bucket_uri := flag.String("source-bucket-uri", "si://", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
 
 	target_bucket_uri := flag.String("target-bucket-uri", "", "A valid GoCloud bucket URI. Valid schemes are: file://, s3://.")
 
 	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
+	force := flag.Bool("force", false, "Clone files even if they are present in target bucket and MD5 hashes between source and target buckets match.")
 
 	flag.Parse()
 
@@ -49,6 +50,7 @@ func main() {
 		opts := &clone.CloneOptions{
 			URI:     uri,
 			Workers: *workers,
+			Force:   *force,
 		}
 
 		err := clone.CloneBucket(ctx, opts, source_bucket, target_bucket)

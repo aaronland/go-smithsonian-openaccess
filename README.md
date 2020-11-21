@@ -45,12 +45,75 @@ As of this writing the code to retrieve data from S3 buckets (other than the Smi
 To build binary versions of these tools run the `cli` Makefile target. For example:
 
 ```
-$> make cli
+> make cli
+go build -mod vendor -o bin/clone cmd/clone/main.go
 go build -mod vendor -o bin/emit cmd/emit/main.go
 go build -mod vendor -o bin/findingaid cmd/findingaid/main.go
 go build -mod vendor -o bin/location cmd/location/main.go
 go build -mod vendor -o bin/placename cmd/placename/main.go
 ```
+
+### clone
+
+A command-line tool to clone OpenAccess data to a target destination.
+
+This tool was written principally to clone OpenAccess data from the Smithsonian's `smithsonian-open-access` S3 bucket to a local filesystem but it can be used to clone data to and from any supported `GoCloud.blob` source.
+
+```
+> ./bin/clone -h
+Usage of ./bin/clone:
+  -force
+    	Clone files even if they are present in target bucket and MD5 hashes between source and target buckets match.
+  -source-bucket-uri string
+    	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket. (default "si://")
+  -target-bucket-uri string
+    	A valid GoCloud bucket URI. Valid schemes are: file://, s3://.
+  -workers int
+    	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
+```
+
+For example:
+
+```
+$> ./bin/clone  -source-bucket-uri si:// -target-bucket-uri file:///tmp metadata/chndm
+...time passes
+
+$> ls -al /tmp/metadata/edan/chndm/*.txt 
+-rw-------  1 user  wheel   571870 Nov 21 11:31 /tmp/metadata/edan/chndm/00.txt
+-rw-------  1 user  wheel   569577 Nov 21 11:31 /tmp/metadata/edan/chndm/01.txt
+-rw-------  1 user  wheel   492463 Nov 21 11:31 /tmp/metadata/edan/chndm/02.txt
+-rw-------  1 user  wheel   480150 Nov 21 11:31 /tmp/metadata/edan/chndm/03.txt
+-rw-------  1 user  wheel   647755 Nov 21 11:31 /tmp/metadata/edan/chndm/04.txt
+...
+-rw-------  1 user  wheel   491210 Nov 21 11:31 /tmp/metadata/edan/chndm/fd.txt
+-rw-------  1 user  wheel   622405 Nov 21 11:31 /tmp/metadata/edan/chndm/fe.txt
+-rw-------  1 user  wheel   510866 Nov 21 11:31 /tmp/metadata/edan/chndm/ff.txt
+```
+
+And then later on:
+
+```
+$> ./bin/emit -json -format-json -bucket-uri file:///tmp/metadata/edan chndm
+
+[{
+  "id": "edanmdm-chndm_1931-45-37",
+  "version": "",
+  "unitCode": "CHNDM",
+  "linkedId": "0",
+  "type": "edanmdm",
+  "content": {
+    "descriptiveNonRepeating": {
+      "record_ID": "chndm_1931-45-37",
+      "online_media": {
+        "mediaCount": 1,
+  ...and so on
+}]
+  
+#### Notes
+
+* If no optionalal URI or URIs (for example `metadata/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
+
+* Under the hood this code is using the [GoCloud blob abstraction layer](https://gocloud.dev/howto/blob/). The default behaviour for the abstraction is to assume restrictive permissions when creating new files. Unfortunately, as of this writing, there is no common way for assigning permissions using the `GoCloud blob` abstraction so this is something you'll need to account for separately from this tool.
 
 ### emit
 
