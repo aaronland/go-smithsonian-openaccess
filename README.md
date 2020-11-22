@@ -62,6 +62,8 @@ This tool was written principally to clone OpenAccess data from the Smithsonian'
 ```
 > ./bin/clone -h
 Usage of ./bin/clone:
+  -compress
+    	Compress files in the target bucket using bzip2 encoding. Files will be appended with a '.bz2' suffix.
   -force
     	Clone files even if they are present in target bucket and MD5 hashes between source and target buckets match.
   -source-bucket-uri string

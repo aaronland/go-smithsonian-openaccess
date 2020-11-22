@@ -8,5 +8,6 @@ require (
 	github.com/aaronland/go-wunderkammer v0.0.9
 	github.com/aws/aws-sdk-go v1.35.31
 	github.com/jtacoma/uritemplates v1.0.0
+	github.com/mholt/archiver/v3 v3.5.0
 	gocloud.dev v0.20.0
 )

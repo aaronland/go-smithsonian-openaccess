@@ -19,6 +19,7 @@ func main() {
 
 	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
 	force := flag.Bool("force", false, "Clone files even if they are present in target bucket and MD5 hashes between source and target buckets match.")
+	compress := flag.Bool("compress", false, "Compress files in the target bucket using bzip2 encoding. Files will be appended with a '.bz2' suffix.")
 
 	flag.Parse()
 
@@ -48,9 +49,10 @@ func main() {
 	for _, uri := range uris {
 
 		opts := &clone.CloneOptions{
-			URI:     uri,
-			Workers: *workers,
-			Force:   *force,
+			URI:      uri,
+			Workers:  *workers,
+			Force:    *force,
+			Compress: *compress,
 		}
 
 		err := clone.CloneBucket(ctx, opts, source_bucket, target_bucket)

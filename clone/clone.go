@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/mholt/archiver/v3"
 	"gocloud.dev/blob"
 	"io"
 	_ "log"
@@ -13,9 +14,10 @@ import (
 )
 
 type CloneOptions struct {
-	URI     string
-	Workers int
-	Force   bool
+	URI      string
+	Workers  int
+	Force    bool
+	Compress bool
 }
 
 func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
@@ -249,7 +251,26 @@ func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 		//
 	}
 
-	if !opts.Force {
+	compare_md5 := true
+
+	if opts.Force {
+		compare_md5 = false
+	}
+
+	v := ctx.Value(openaccess.IS_SMITHSONIAN_S3)
+
+	if v != nil && v.(bool) == true {
+
+		// OpenAccess files in Smithsonian S3 bucket are uncompressed so
+		// if we are compressing on the receiving side there is no way to
+		// compare source and target files.
+
+		if compare_md5 && opts.Compress {
+			compare_md5 = false
+		}
+	}
+
+	if compare_md5 {
 
 		target_attrs, err := target_bucket.Attributes(ctx, uri)
 
@@ -275,13 +296,24 @@ func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 	defer source_fh.Close()
 
-	target_fh, err := target_bucket.NewWriter(ctx, uri, nil)
+	target_uri := uri
+
+	if opts.Compress {
+		target_uri = fmt.Sprintf("%s.bz2", uri)
+	}
+
+	target_fh, err := target_bucket.NewWriter(ctx, target_uri, nil)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = io.Copy(target_fh, source_fh)
+	if opts.Compress {
+		arch := archiver.NewBz2()
+		err = arch.Compress(source_fh, target_fh)
+	} else {
+		_, err = io.Copy(target_fh, source_fh)
+	}
 
 	if err != nil {
 		return err
