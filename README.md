@@ -60,8 +60,11 @@ A command-line tool to clone OpenAccess data to a target destination.
 This tool was written principally to clone OpenAccess data from the Smithsonian's `smithsonian-open-access` S3 bucket to a local filesystem but it can be used to clone data to and from any supported `GoCloud.blob` source.
 
 ```
-> ./bin/clone -h
-Usage of ./bin/clone:
+$> ./bin/clone -h
+Usage:
+  ./bin/clone [options] [path1 path2 ... pathN]
+
+Options:
   -compress
     	Compress files in the target bucket using bzip2 encoding. Files will be appended with a '.bz2' suffix.
   -force
@@ -153,7 +156,11 @@ $> ./bin/emit \
 A command-line tool for parsing and emitting individual records from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
 
 ```
-$> go run -mod vendor cmd/emit/main.go -h
+$> ./bin/emit -h
+Usage:
+  ./bin/emit [options] [path1 path2 ... pathN]
+
+Options:
   -bucket-uri string
     	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.
   -format-json
@@ -453,7 +460,11 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 A command-line tool for emitting a CSV document mapping individual record identifiers to their corresponding OpenAccess JSON file and line number, produced from a directory containing compressed and line-delimited Smithsonian OpenAccess JSON files.
 
 ```
-> go run -mod vendor cmd/findingaid/main.go -h
+$> ./bin/findingaid -h
+Usage:
+  ./bin/findingaid [options] [path1 path2 ... pathN]
+
+Options:
   -bucket-uri string
     	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.
   -csv-header
@@ -587,8 +598,11 @@ nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
 A command-line tool for parsing line-delimited Smithsonian OpenAccess JSON files and emiting place data as a stream of CSV records.
 
 ```
-> ./bin/location -h
-Usage of ./bin/location:
+$> ./bin/location -h
+Usage:
+  ./bin/location [options]
+
+Options:
   -null
     	Emit to /dev/null
   -stdout
@@ -633,8 +647,11 @@ The column in the CSV output are:
 A command-line tool for extracting only placename data from a CSV stream produced by the `location` tool.
 
 ```
-> ./bin/placename -h
-Usage of ./bin/placename:
+$> ./bin/placename -h
+Usage:
+  ./bin/placename [options]
+
+Options:
   -unique
     	Only unique emit placename strings once. (default true)
 ```

@@ -48,6 +48,13 @@ func main() {
 
 	csv_header := flag.Bool("csv-header", true, "Include a CSV header row in the output")
 
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n")
+		fmt.Fprintf(os.Stderr, "  %s [options] [path1 path2 ... pathN]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	if *include_all {

@@ -14,6 +14,13 @@ func main() {
 
 	uniq := flag.Bool("unique", true, "Only unique emit placename strings once.")
 
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n")
+		fmt.Fprintf(os.Stderr, "  %s [options]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	r := csv.NewReader(os.Stdin)

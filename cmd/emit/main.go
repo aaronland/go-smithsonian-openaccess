@@ -49,6 +49,13 @@ func main() {
 
 	query_mode := flag.String("query-mode", query.QUERYSET_MODE_ALL, desc_modes)
 
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage:\n")
+		fmt.Fprintf(os.Stderr, "  %s [options] [path1 path2 ... pathN]\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
+
 	flag.Parse()
 
 	ctx := context.Background()
