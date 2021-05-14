@@ -2,4 +2,4 @@ module github.com/aaronland/go-json-query
 
 go 1.12
 
-require github.com/tidwall/gjson v1.6.0
+require github.com/tidwall/gjson v1.7.5

@@ -6,14 +6,18 @@ import (
 	"strings"
 )
 
+// The separator string used to distinguish {PATH}={REGULAR_EXPRESSION} strings.
 const SEP string = "="
 
+// QueryFlags holds one or more Query instances that are created using {PATH}={REGULAR_EXPRESSION} strings.
 type QueryFlags []*Query
 
+// Return the string value of the set of Query instances. Currently returns "".
 func (m *QueryFlags) String() string {
 	return ""
 }
 
+// Parse a {PATH}={REGULAR_EXPRESSION} string and store it as one of a set of Query instances.
 func (m *QueryFlags) Set(value string) error {
 
 	parts := strings.Split(value, SEP)
