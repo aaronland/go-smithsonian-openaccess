@@ -7,19 +7,29 @@ import (
 	"regexp"
 )
 
+// QUERYSET_MODE_ANY is a flag to signal that only one match in a QuerySet needs to be successful.
 const QUERYSET_MODE_ANY string = "ANY"
+
+// QUERYSET_MODE_ALL is a flag to signal that only all matches in a QuerySet needs to be successful.
 const QUERYSET_MODE_ALL string = "ALL"
 
+// QuerySet is a struct containing one or more Query instances and flags for how the results of those queries should be interpreted.
 type QuerySet struct {
+	// A set of Query instances
 	Queries []*Query
-	Mode    string
+	// A string flag representing how query results should be interpreted.
+	Mode string
 }
 
+// Query is an atomic query to perform against a JSON document.
 type Query struct {
-	Path  string
+	// A valid tidwall/gjson query path.
+	Path string
+	// A valid regular expression.
 	Match *regexp.Regexp
 }
 
+// Matches compares the set of queries in 'qs' against a JSON record ('body') and returns true or false depending on whether or not some or all of those queries are matched successfully.
 func Matches(ctx context.Context, qs *QuerySet, body []byte) (bool, error) {
 
 	select {
@@ -61,7 +71,7 @@ func Matches(ctx context.Context, qs *QuerySet, body []byte) (bool, error) {
 		if mode == QUERYSET_MODE_ANY && matches > 0 {
 			break
 		}
-		
+
 	}
 
 	if mode == QUERYSET_MODE_ALL {

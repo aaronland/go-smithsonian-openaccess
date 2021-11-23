@@ -1,3 +1,4 @@
+// package walk provides methods for walking all in the records in a line-delimited JSON document.
 package walk
 
 import (
