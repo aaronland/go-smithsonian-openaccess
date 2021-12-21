@@ -1,7 +1,7 @@
 # github.com/aaronland/go-json-query v0.1.2
 ## explicit
 github.com/aaronland/go-json-query
-# github.com/aaronland/go-jsonl v0.0.9
+# github.com/aaronland/go-jsonl v0.0.10
 ## explicit
 github.com/aaronland/go-jsonl/walk
 # github.com/aaronland/go-wunderkammer v0.0.9
