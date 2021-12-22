@@ -9,8 +9,6 @@ import (
 	_ "gocloud.dev/blob/s3blob"
 	"io"
 	"log"
-	"path/filepath"
-	"regexp"
 )
 
 func main() {
@@ -27,12 +25,6 @@ func main() {
 	}
 
 	defer bucket.Close()
-
-	re_datafile, err := regexp.Compile(`[a-f0-9]{2}\.txt`)
-
-	if err != nil {
-		log.Fatalf("Failed to compile data file regular expression, %v", err)
-	}
 
 	var list func(context.Context, *blob.Bucket, string) error
 
@@ -67,9 +59,7 @@ func main() {
 				continue
 			}
 
-			fname := filepath.Base(path)
-
-			if !re_datafile.MatchString(fname) {
+			if !openaccess.IsMetaDataFile(path){
 				continue
 			}
 
