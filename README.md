@@ -88,10 +88,12 @@ $> ./bin/clone \
 	
 ...time passes
 
-> du -h -d 1 /usr/local/data/si
+$> du -h -d 1 /usr/local/data/si
  37G	/usr/local/data/si/metadata
  37G	/usr/local/data/si
 ```
+
+See the way we're only cloning the `metadata/edan` tree? If you don't specify a subfolder you'll end up cloning _all the images_ in the OpenAccess data and that might be prohibitive in terms of bandwidth and storage.
 
 And then later on:
 
