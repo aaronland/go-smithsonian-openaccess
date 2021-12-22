@@ -143,6 +143,13 @@ func main() {
 			return err
 		}
 
+		// Skip things like index.txt' or errant 'fileblob*' records
+		
+		if !openaccess.IsMetaDataFile(rec.Path){
+			// log.Println("SKIP", rec.Path)
+			return nil
+		}
+		
 		records := make([][]byte, 0)
 		var object *openaccess.OpenAccessRecord
 

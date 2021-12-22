@@ -6,6 +6,7 @@ import (
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
+	_ "log"
 )
 
 type WalkOptions struct {
@@ -112,61 +113,3 @@ func WalkSmithsonianRecord(ctx context.Context, opts *WalkOptions, bucket *blob.
 	jw.WalkReader(ctx, jw_opts, fh)
 	return nil
 }
-
-// deprecated - keeping it around for a bit just in case
-// (20201119/straup)
-
-/*
-
-func WalkSmithsonianBucketWithIndexForUnit(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, unit string) error {
-
-	unit = strings.ToLower(unit)
-	index := fmt.Sprintf("metadata/edan/%s/index.txt", unit)
-
-	fh, err := bucket.NewReader(ctx, index, nil)
-
-	if err != nil {
-		return err
-	}
-
-	defer fh.Close()
-
-	reader := bufio.NewReader(fh)
-
-	for {
-
-		select {
-		case <-ctx.Done():
-			break
-		default:
-			// pass
-		}
-
-		uri, err := reader.ReadString('\n')
-
-		if err != nil {
-
-			if err == io.EOF {
-				break
-			} else {
-				continue
-			}
-		}
-
-		uri = strings.TrimSpace(uri)
-		uri = strings.Replace(uri, openaccess.AWS_S3_URI, "", 1)
-
-		fmt.Println(uri)
-		continue
-
-		err = WalkSmithsonianRecord(ctx, opts, bucket, uri)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-*/
