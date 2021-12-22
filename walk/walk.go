@@ -17,7 +17,7 @@ type WalkOptions struct {
 	QuerySet     *query.QuerySet
 	Callback     WalkRecordCallbackFunc
 	IsBzip       bool
-	Filter jw.WalkFilterFunc
+	Filter       jw.WalkFilterFunc
 }
 
 type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
@@ -41,7 +41,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 		ValidateJSON:  opts.ValidateJSON,
 		QuerySet:      opts.QuerySet,
 		IsBzip:        opts.IsBzip,
-		Filter: opts.Filter,
+		Filter:        opts.Filter,
 	}
 
 	go func() {
@@ -65,10 +65,10 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 
 func WalkSmithsonianRecord(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, uri string) error {
 
-	if !openaccess.IsMetaDataFile(uri){
+	if !openaccess.IsMetaDataFile(uri) {
 		return nil
 	}
-	
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"gocloud.dev/blob"
 	"io"
-	"log"
+	_ "log"
 	"strings"
 	"sync"
 )
@@ -87,7 +87,6 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 			if opts.Filter != nil {
 
 				if !opts.Filter(ctx, obj.Key) {
-					log.Println("NOPE", obj.Key)
 					continue
 				}
 			}

@@ -59,7 +59,7 @@ func main() {
 				continue
 			}
 
-			if !openaccess.IsMetaDataFile(path){
+			if !openaccess.IsMetaDataFile(path) {
 				continue
 			}
 

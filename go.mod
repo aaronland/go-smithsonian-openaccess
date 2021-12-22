@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/aaronland/go-json-query v0.1.2
-	github.com/aaronland/go-jsonl v0.0.11
+	github.com/aaronland/go-jsonl v0.0.12
 	github.com/aaronland/go-wunderkammer v0.0.9
 	github.com/aws/aws-sdk-go v1.42.25
 	github.com/jtacoma/uritemplates v1.0.0
