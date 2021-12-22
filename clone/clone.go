@@ -7,9 +7,7 @@ import (
 	"github.com/mholt/archiver/v3"
 	"gocloud.dev/blob"
 	"io"
-	_ "log"
-	"path/filepath"
-	"strings"
+	"log"
 	"sync"
 )
 
@@ -22,12 +20,6 @@ type CloneOptions struct {
 
 func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
 
-	v := ctx.Value(openaccess.IS_SMITHSONIAN_S3)
-
-	if v != nil && v.(bool) == true {
-		return CloneSmithsonianBucket(ctx, opts, source_bucket, target_bucket)
-	}
-
 	throttle := make(chan bool, opts.Workers)
 
 	for i := 0; i < opts.Workers; i++ {
@@ -36,9 +28,6 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
-	err_ch := make(chan error)
-	done_ch := make(chan bool)
 
 	var walkFunc func(context.Context, *blob.Bucket, string) error
 
@@ -74,169 +63,48 @@ func CloneBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 			}
 
 			if err != nil {
-				return err
+				return fmt.Errorf("Failed to iterate next, %w", err)
+			}
+
+			if obj.IsDir {
+
+				err = walkFunc(ctx, bucket, obj.Key)
+
+				if err != nil {
+					return fmt.Errorf("Failed to walk '%s', %w", obj.Key, err)
+				}
+
+				continue
 			}
 
 			<-throttle
 
 			wg.Add(1)
 
-			go func(obj *blob.ListObject) {
+			go func(uri string) {
 
 				defer func() {
-					throttle <- true
 					wg.Done()
+					throttle <- true
 				}()
 
-				select {
-				case <-ctx.Done():
-					return
-				default:
-					// pass
-				}
-
-				if obj.IsDir {
-
-					err = walkFunc(ctx, bucket, obj.Key)
-
-					if err != nil {
-						err_ch <- err
-					}
-
-					return
-				}
-
-				err := cloneObject(ctx, opts, source_bucket, target_bucket, obj.Key)
+				err = cloneObject(ctx, opts, source_bucket, target_bucket, uri)
 
 				if err != nil {
-					err_ch <- err
-					return
+					log.Printf("Failed to clone '%s', %w", uri, err)
 				}
 
-			}(obj)
+			}(obj.Key)
 		}
 
 		wg.Wait()
 		return nil
 	}
 
-	go func() {
+	err := walkFunc(ctx, source_bucket, opts.URI)
 
-		err := walkFunc(ctx, source_bucket, opts.URI)
-
-		if err != nil {
-			err_ch <- err
-		}
-
-		done_ch <- true
-	}()
-
-	for {
-		select {
-		case <-done_ch:
-			return nil
-		case err := <-err_ch:
-			return err
-		}
-	}
-
-	return nil
-}
-
-func CloneSmithsonianBucket(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
-
-	uri := opts.URI
-	base := filepath.Base(uri)
-
-	switch base {
-	case "metadata":
-		return CloneSmithsonianBucketForAll(ctx, opts, source_bucket, target_bucket)
-	case "objects":
-		return CloneSmithsonianBucketForAll(ctx, opts, source_bucket, target_bucket)
-	default:
-		return CloneSmithsonianBucketForUnit(ctx, opts, source_bucket, target_bucket, base)
-	}
-}
-
-func CloneSmithsonianBucketForAll(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket) error {
-
-	for _, unit := range openaccess.SMITHSONIAN_UNITS {
-
-		select {
-		case <-ctx.Done():
-			break
-		default:
-			// pass
-		}
-
-		err := CloneSmithsonianBucketForUnit(ctx, opts, source_bucket, target_bucket, unit)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func CloneSmithsonianBucketForUnit(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bucket, target_bucket *blob.Bucket, unit string) error {
-
-	throttle := make(chan bool, opts.Workers)
-
-	for i := 0; i < opts.Workers; i++ {
-		throttle <- true
-	}
-
-	unit = strings.ToLower(unit)
-
-	remaining := 0
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	err_ch := make(chan error)
-	done_ch := make(chan bool)
-
-	for _, fname := range openaccess.SMITHSONIAN_DATA_FILES {
-
-		remaining += 1
-		<-throttle
-
-		uri := fmt.Sprintf("metadata/edan/%s/%s", unit, fname)
-
-		go func(uri string) {
-
-			defer func() {
-				throttle <- true
-				done_ch <- true
-			}()
-
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				// pass
-			}
-
-			err := cloneObject(ctx, opts, source_bucket, target_bucket, uri)
-
-			if err != nil {
-				err_ch <- err
-			}
-
-		}(uri)
-	}
-
-	for remaining > 0 {
-
-		select {
-		case <-done_ch:
-			remaining -= 1
-		case err := <-err_ch:
-			return err
-		default:
-			// pass
-		}
+	if err != nil {
+		return fmt.Errorf("Failed to clone bucket, %w", err)
 	}
 
 	return nil

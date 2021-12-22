@@ -2,40 +2,40 @@
 
 Go package for working with the Smithsonian Open Access release
 
-## Important
+## Documentation
 
-This is work in progress. Proper documentation to follow.
+Documentation is incomplete.
 
 ## Data sources
 
 This package and the tools it exports support two types of data sources for the Smithsonian Open Access: A local file system and an AWS S3 bucket. Under the hood the code is using the GoCloud [blob](https://godoc.org/gocloud.dev/blob) abstraction layer so other [storage services](https://gocloud.dev/howto/blob/) could be supported but currently they are not.
 
-Access to the data on a local file system is presumed to be from a checkout of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) GitHub repository. That repo has grown sufficiently large that [it can be difficult](https://github.com/Smithsonian/OpenAccess/issues/7) to successfully download a copy of the data.
+Access to the data on a local file system is presumed to be a clone of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) S3 bucket (described on the [Smithsonian Open Access AWS Registry page](https://registry.opendata.aws/smithsonian-open-access/). A local copy of this data can be created using the `clone` tool described below.
 
 The data itself also lives in a Smithsonian-operated AWS S3 bucket so this code has been updated to retrieve data from there if asked to. For a number of reasons specific to the Smithsonian retrieving data from their S3 bucket does not fit neatly in to the `GoCloud` abstraction layer but efforts have been made to hide those details from users of this code.
 
 Most of the examples below assume a local Git checkout. For example:
 
 ```
-$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH
+$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/edan/nmah
 ```
 
 In order to retrieve data from the Smithsonian-operated S3 bucket you would change the `-bucket-uri` flag to:
 
 ```
-$> ./bin/emit -bucket-uri 's3://smithsonian-open-access?region=us-west-2' metadata/objects/NMAH
+$> ./bin/emit -bucket-uri 's3://smithsonian-open-access?region=us-west-2' metadata/edan/nmah
 ```
 
 Or the following, which is included as a convenience method:
 
 ```
-$> ./bin/emit -bucket-uri 'si://' metadata/objects/NMAH
+$> ./bin/emit -bucket-uri 'si://' metadata/edan/nmah
 ```
 
 A by-product of this work is that the code is also able to retrieve data from any other S3 bucket. For example:
 
 ```
-$> ./bin/emit -bucket-uri 's3://YOUR-OPENACCESS-BUCKET?region=us-east-1' metadata/objects/NMAH
+$> ./bin/emit -bucket-uri 's3://YOUR-OPENACCESS-BUCKET?region=YOUR-BUCKET-REGION' metadata/edan/nmah
 ```
 
 As of this writing the code to retrieve data from S3 buckets (other than the Smithsonian's) assumes that those buckets allow public access and have public directory listings enabled.
@@ -45,7 +45,7 @@ As of this writing the code to retrieve data from S3 buckets (other than the Smi
 To build binary versions of these tools run the `cli` Makefile target. For example:
 
 ```
-> make cli
+$> make cli
 go build -mod vendor -o bin/clone cmd/clone/main.go
 go build -mod vendor -o bin/emit cmd/emit/main.go
 go build -mod vendor -o bin/findingaid cmd/findingaid/main.go
@@ -82,43 +82,15 @@ For example:
 ```
 $> ./bin/clone \
 	-source-bucket-uri si:// \
-	-target-bucket-uri file:///tmp \
-	metadata/chndm
+	-target-bucket-uri 'file:///usr/local/data/si/?metadata=skip' \
+	-workers 100 \
+	metadata/edan
 	
 ...time passes
 
-$> ls -al /tmp/metadata/edan/chndm/*.txt 
--rw-------  1 user  wheel   571870 Nov 21 11:31 /tmp/metadata/edan/chndm/00.txt
--rw-------  1 user  wheel   569577 Nov 21 11:31 /tmp/metadata/edan/chndm/01.txt
--rw-------  1 user  wheel   492463 Nov 21 11:31 /tmp/metadata/edan/chndm/02.txt
--rw-------  1 user  wheel   480150 Nov 21 11:31 /tmp/metadata/edan/chndm/03.txt
--rw-------  1 user  wheel   647755 Nov 21 11:31 /tmp/metadata/edan/chndm/04.txt
-...
--rw-------  1 user  wheel   491210 Nov 21 11:31 /tmp/metadata/edan/chndm/fd.txt
--rw-------  1 user  wheel   622405 Nov 21 11:31 /tmp/metadata/edan/chndm/fe.txt
--rw-------  1 user  wheel   510866 Nov 21 11:31 /tmp/metadata/edan/chndm/ff.txt
-```
-
-Or:
-
-```
-$> ./bin/clone \
-	-source-bucket-uri file:///tmp \
-	-target-bucket-uri file:///tmp/debug \
-	metadata/edan/chndm
-	
-...less time passes
-
-$> ls -al /tmp/debug/metadata/edan/chndm/*.txt 
--rw-------  1 user  wheel   571870 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/00.txt
--rw-------  1 user  wheel   569577 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/01.txt
--rw-------  1 user  wheel   492463 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/02.txt
--rw-------  1 user  wheel   480150 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/03.txt
--rw-------  1 user  wheel   647755 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/04.txt
-...
--rw-------  1 user  wheel   491210 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/fd.txt
--rw-------  1 user  wheel   622405 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/fe.txt
--rw-------  1 user  wheel   510866 Nov 21 11:31 /tmp/debug/metadata/edan/chndm/ff.txt
+> du -h -d 1 /usr/local/data/si
+ 37G	/usr/local/data/si/metadata
+ 37G	/usr/local/data/si
 ```
 
 And then later on:
@@ -127,7 +99,7 @@ And then later on:
 $> ./bin/emit \
 	-json \
 	-format-json \
-	-bucket-uri file:///tmp/metadata/edan \
+	-bucket-uri file:///usr/local/data/si/metadata/edan \
 	chndm
 
 [{
@@ -147,7 +119,7 @@ $> ./bin/emit \
 
 #### Notes
 
-* If no extra URI or URIs (for example `metadata/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
+* If no extra URI or URIs (for example `metadata/edan/chndm`) are specified then the code will attempt to clone everything in the "source" bucket recursively.
 
 * Under the hood this code is using the [GoCloud blob abstraction layer](https://gocloud.dev/howto/blob/). The default behaviour for the abstraction is to assume restrictive permissions when creating new files. Unfortunately, as of this writing, there is no common way for assigning permissions using the `GoCloud blob` abstraction so this is something you'll need to account for separately from this tool.
 
@@ -190,13 +162,13 @@ Options:
 For example, processing every record in the OpenAccess dataset ensuring it is valid JSON and emitting it to `/dev/null`:
 
 ```
-> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si \
   -stdout=false \
   -validate-json \  		
   -null \
   -stats \
   -workers 20 \
-  metadata/objects
+  metadata/edan
 
 2020/06/26 10:19:17 Processed 11620642 records in 12m1.141284159s
 ```
@@ -204,10 +176,10 @@ For example, processing every record in the OpenAccess dataset ensuring it is va
 Or processing everything in the [Air and Space](https://airandspace.si.edu/collections) collection as JSON, passing the result to the `jq` tool and searching for things with "space" in the title:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si \
    -json \
    -validate-json \  		   
-   metadata/objects/NASM/ \
+   metadata/edan/nasm/ \
    | jq '.[]["title"]' \
    | grep -i 'space' \
    | sort
@@ -231,11 +203,11 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 Or doing the same, but for [things about kittens](https://collection.cooperhewitt.org/objects/18382391/) in the [Cooper Hewitt](https://collection.cooperhewitt.org) collection:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si \
    -json \
    -validate-json \  		      
    -stats \
-   metadata/objects/CHNDM/ \
+   metadata/edan/chndm/ \
    | jq '.[]["title"]' \
    | grep -i 'kitten' \
    | sort
@@ -248,11 +220,11 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 Or something similar by not emitting a JSON list but formatting each record (as JSON) and filtering for the words "title" and "kitten":
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si \
    -format-json \
    -validate-json=false \
    -stats \
-   metadata/objects/CHNDM \
+   metadata/edan/chndm \
    | grep '"title"' \
    | grep -i 'kitten' \
    | sort
@@ -275,10 +247,10 @@ Paths follow the dot notation syntax used by the [tidwall/gjson](https://github.
 For example:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si\
    -json \
    -query 'title=cats?\s+' \
-   metadata/objects/CHNDM \
+   metadata/edan/chndm \
    | jq '.[]["title"]'
    
 "View of Moat Mountain from Wildcat Brook, Jackson, New Hampshire, Looking Southwest"
@@ -288,7 +260,7 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 You can pass multiple `-query` parameters:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si\
    -json \
    -query 'title=cats?\s+' \
    -query 'title=(?i)^view' \
@@ -301,12 +273,12 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 The default query mode is to ensure that all queries match but you can also specify that only one or more queries need to match by passing the `-query-mode ANY` flag:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si\
    -json \
    -query 'title=cats?\s+' \
    -query 'title=(?i)^view' \
    -query-mode ANY \
-   metadata/objects/CHNDM \
+   metadata/edan/chndm \
    | jq '.[]["title"]'
    
 "View of Santi Giovanni e Paolo a Celio, Rome"
@@ -327,12 +299,12 @@ $> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess 
 Did you know that there are 61 (out of 11 million) objects in the Smithsonian collection with the word "kitten" in their title?
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si\
    -json \
    -query 'title=(?i)kitten' \
    -stats \
    -workers 50 \
-   metadata/objects \
+   metadata/edan \
    | jq '.[]["title"]'
    
 2020/06/26 18:22:04 Processed 62 records in 5m9.567738657s
@@ -407,10 +379,10 @@ It is also possible to emit OpenAccess records as [OEmbed](https://oembed.com/) 
 For example:
 
 ```
-$> go run -mod vendor cmd/emit/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si \
    -json \
    -oembed \
-   metadata/objects/NASM \
+   metadata/edan/nasm \
    | jq
    
 [
@@ -496,8 +468,8 @@ Options:
 For example:
 
 ```
-$> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
-	metadata/objects/SAAM 
+$> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
+	metadata/edan/saam
 
 id,path,line_number
 saam_1971.439.94,metadata/objects/SAAM/00.txt.bz2,1
@@ -520,9 +492,9 @@ saam_1968.19.12,metadata/objects/SAAM/0d.txt.bz2,2
 By default only the `OpenAccess content.descriptiveNonRepeating.record_ID` identifier is included in the finding aid. You can include other identifiers with their corresponding command-line flag or enable include all identifiers by passing the `-include-all` flag. For example:
 
 ```
-$> go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
    -include-all \
-   metadata/objects/NMAAHC
+   metadata/edan/nmaahc
    
 id,path,line_number
 http://n2t.net/ark:/65665/fd53f870fc2-73af-4c50-b1c5-a3fd2829ad1f,metadata/objects/NMAAHC/ff.txt.bz2,1
@@ -562,10 +534,10 @@ https://nmaahc.si.edu/object/nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz
 The `findingaid` tool also supports inline queries (described above). For example there are 4044 records with the word "panda" in their title:
 
 ```
-go run -mod vendor cmd/findingaid/main.go -bucket-uri file:///usr/local/OpenAccess \
+$> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
    -query 'title=(?i)pandas?' \
    -workers 50 \
-   metadata/objects/ \
+   metadata/edan/ \
    > pandas.csv
 
 time passes...
@@ -613,7 +585,7 @@ For example:
 
 ```
 $> ./bin/emit \
-	-bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
+	-bucket-uri file:///usr/local/data/si/edan/nmah \
 
    | ./bin/location
 
@@ -659,7 +631,7 @@ Options:
 For example:
 
 ```
-$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si/metadata/edan/nmah \
 
    | ./bin/location \
    
@@ -673,7 +645,7 @@ $> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/NMAH \
 Or:
 
 ```
-$> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/objects/ \
+$> ./bin/emit -bucket-uri file:///usr/local/data/si/metadata/edan/ \
 
    | ./bin/location \
    

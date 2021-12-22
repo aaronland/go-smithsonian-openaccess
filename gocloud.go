@@ -57,7 +57,7 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 			return nil, nil, err
 		}
 
-		// PREFIX GOES HERE
+		// SKIPMETADATA GOES HERE
 
 		b, err := s3blob.OpenBucket(ctx, sess, AWS_S3_BUCKET, nil)
 
