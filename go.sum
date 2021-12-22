@@ -108,6 +108,8 @@ github.com/aaronland/go-jsonl v0.0.9 h1:q/2L8eGYLSxCsUTK0SiUrVOVIKKdYD9LfA41XCUu
 github.com/aaronland/go-jsonl v0.0.9/go.mod h1:I4Gl7tWJ34nR47ffqLzPidXFAXKtKVLGuUA7KRg664M=
 github.com/aaronland/go-jsonl v0.0.10 h1:LjKaXtalyK/UKwIAV81G9HPWmEey2paS6yRdYVdu2cw=
 github.com/aaronland/go-jsonl v0.0.10/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
+github.com/aaronland/go-jsonl v0.0.11 h1:IrYEnf0r9doRPVr8EnDeY02MkrCoAXLyjSsbp2P+FqY=
+github.com/aaronland/go-jsonl v0.0.11/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
 github.com/aaronland/go-wunderkammer v0.0.9 h1:QXDdpnc8UAn6p+RclE8oqJrF4NbD4onIaamMJLWPMdc=
 github.com/aaronland/go-wunderkammer v0.0.9/go.mod h1:VKB7xaktV/NJchKWbbJyByfmUm9dTyOEJNO3WXsBnDA=
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=

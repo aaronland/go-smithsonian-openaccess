@@ -17,6 +17,7 @@ type WalkOptions struct {
 	QuerySet     *query.QuerySet
 	Callback     WalkRecordCallbackFunc
 	IsBzip       bool
+	Filter jw.WalkFilterFunc
 }
 
 type WalkRecordCallbackFunc func(context.Context, *jw.WalkRecord, error) error
@@ -40,6 +41,7 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 		ValidateJSON:  opts.ValidateJSON,
 		QuerySet:      opts.QuerySet,
 		IsBzip:        opts.IsBzip,
+		Filter: opts.Filter,
 	}
 
 	go func() {

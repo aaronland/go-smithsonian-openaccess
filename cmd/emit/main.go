@@ -142,13 +142,6 @@ func main() {
 			log.Println(err)
 			return err
 		}
-
-		// Skip things like index.txt' or errant 'fileblob*' records
-		
-		if !openaccess.IsMetaDataFile(rec.Path){
-			// log.Println("SKIP", rec.Path)
-			return nil
-		}
 		
 		records := make([][]byte, 0)
 		var object *openaccess.OpenAccessRecord
@@ -199,6 +192,16 @@ func main() {
 		wr.Write([]byte("["))
 	}
 
+	filter_func := func(ctx context.Context, uri string) bool {
+		// Skip things like index.txt' or errant 'fileblob*' records
+		
+		if !openaccess.IsMetaDataFile(uri){
+			return false
+		}
+
+		return true
+	}
+
 	for _, uri := range uris {
 
 		opts := &walk.WalkOptions{
@@ -208,6 +211,7 @@ func main() {
 			ValidateJSON: *validate_json,
 			Callback:     cb,
 			IsBzip:       false,
+			Filter: filter_func,
 		}
 
 		if len(queries) > 0 {

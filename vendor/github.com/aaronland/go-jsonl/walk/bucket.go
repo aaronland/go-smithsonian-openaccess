@@ -4,6 +4,7 @@ import (
 	"context"
 	"gocloud.dev/blob"
 	"io"
+	"log"
 	"strings"
 	"sync"
 )
@@ -81,6 +82,14 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 				}
 
 				continue
+			}
+
+			if opts.Filter != nil {
+
+				if !opts.Filter(ctx, obj.Key) {
+					log.Println("NOPE", obj.Key)
+					continue
+				}
 			}
 
 			// parse file of line-demilited records
