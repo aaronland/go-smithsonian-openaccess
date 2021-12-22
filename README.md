@@ -170,9 +170,9 @@ $> ./bin/emit -bucket-uri file:///usr/local/data/si \
   -null \
   -stats \
   -workers 20 \
-  metadata/edan
+  metadata/edan/cfchfolklife
 
-2020/06/26 10:19:17 Processed 11620642 records in 12m1.141284159s
+2021/12/22 14:52:57 Processed 59410 records in 5.713120297s
 ```
 
 Or processing everything in the [Air and Space](https://airandspace.si.edu/collections) collection as JSON, passing the result to the `jq` tool and searching for things with "space" in the title:
@@ -474,20 +474,32 @@ $> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
 	metadata/edan/saam
 
 id,path,line_number
-saam_1971.439.94,metadata/objects/SAAM/00.txt.bz2,1
-saam_1971.439.92,metadata/objects/SAAM/08.txt.bz2,1
-saam_1915.5.1,metadata/objects/SAAM/00.txt.bz2,2
-saam_1971.439.78,metadata/objects/SAAM/03.txt.bz2,1
-saam_XX32,metadata/objects/SAAM/12.txt.bz2,1
-saam_1983.90.173,metadata/objects/SAAM/00.txt.bz2,3
-saam_1970.335.1,metadata/objects/SAAM/03.txt.bz2,2
-saam_1971.439.97,metadata/objects/SAAM/0d.txt.bz2,1
-saam_1968.155.158,metadata/objects/SAAM/12.txt.bz2,2
-saam_1967.14.149,metadata/objects/SAAM/08.txt.bz2,2
-saam_1979.98.188,metadata/objects/SAAM/02.txt.bz2,1
-saam_1985.66.295_540,metadata/objects/SAAM/00.txt.bz2,4
-saam_1970.334,metadata/objects/SAAM/03.txt.bz2,3
-saam_1968.19.12,metadata/objects/SAAM/0d.txt.bz2,2
+saam_1909.7.47,metadata/edan/saam/eb.txt,36
+saam_1979.135.66,metadata/edan/saam/e7.txt,50
+saam_1976.113.20,metadata/edan/saam/e6.txt,50
+saam_1970.355.503,metadata/edan/saam/ed.txt,31
+saam_1985.66.153_298,metadata/edan/saam/ec.txt,36
+saam_1971.292.9,metadata/edan/saam/e8.txt,44
+saam_1973.122.51,metadata/edan/saam/ea.txt,41
+saam_2000.110,metadata/edan/saam/e9.txt,44
+saam_1929.6.159,metadata/edan/saam/e5.txt,64
+saam_1946.10.2,metadata/edan/saam/eb.txt,37
+saam_1983.17.2,metadata/edan/saam/e7.txt,51
+saam_1970.125,metadata/edan/saam/e6.txt,51
+saam_1970.355.388,metadata/edan/saam/ed.txt,32
+saam_1985.66.153_325,metadata/edan/saam/ec.txt,37
+saam_1970.335.16,metadata/edan/saam/e8.txt,45
+saam_1979.135.56,metadata/edan/saam/ea.txt,42
+saam_1971.446.174,metadata/edan/saam/e9.txt,45
+saam_1973.130.114,metadata/edan/saam/e5.txt,65
+saam_1971.244,metadata/edan/saam/eb.txt,38
+saam_1929.6.105,metadata/edan/saam/e7.txt,52
+saam_2000.83.50,metadata/edan/saam/e6.txt,52
+saam_2017.24.4,metadata/edan/saam/ed.txt,33
+saam_1962.8.15,metadata/edan/saam/ec.txt,38
+saam_1979.135.72,metadata/edan/saam/e8.txt,46
+saam_1967.63.39,metadata/edan/saam/ea.txt,43
+saam_1974.13.2,metadata/edan/saam/e9.txt,46
 ... and so on
 ```
 
@@ -497,39 +509,29 @@ By default only the `OpenAccess content.descriptiveNonRepeating.record_ID` ident
 $> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
    -include-all \
    metadata/edan/nmaahc
-   
+
 id,path,line_number
-http://n2t.net/ark:/65665/fd53f870fc2-73af-4c50-b1c5-a3fd2829ad1f,metadata/objects/NMAAHC/ff.txt.bz2,1
-nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
-edanmdm-nmaahc_2014.72.2,metadata/objects/NMAAHC/ff.txt.bz2,1
-http://n2t.net/ark:/65665/fd5343a21ed-73d9-4014-a34c-b175b84168c8,metadata/objects/NMAAHC/21.txt.bz2,1
-nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
-edanmdm-nmaahc_2014.75.130,metadata/objects/NMAAHC/21.txt.bz2,1
-http://n2t.net/ark:/65665/fd59212a6e2-b745-4eb9-84ad-4368ffea8223,metadata/objects/NMAAHC/17.txt.bz2,1
-nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
-edanmdm-nmaahc_2016.140.1.3,metadata/objects/NMAAHC/17.txt.bz2,1
-http://n2t.net/ark:/65665/fd599a84051-37d5-49d4-98d3-9052e5cbcea9,metadata/objects/NMAAHC/22.txt.bz2,1
-nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
-edanmdm-nmaahc_2012.30.3,metadata/objects/NMAAHC/22.txt.bz2,1
-http://n2t.net/ark:/65665/fd53a114ad8-2cc2-4ce2-bbd0-6dd09cc715df,metadata/objects/NMAAHC/0c.txt.bz2,1
-nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
-edanmdm-nmaahc_2013.133.1.4,metadata/objects/NMAAHC/0c.txt.bz2,1
-http://n2t.net/ark:/65665/fd5d302d893-ae7c-4b4d-93bb-59f87237d23a,metadata/objects/NMAAHC/1c.txt.bz2,1
-nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
-edanmdm-nmaahc_2014.222.2,metadata/objects/NMAAHC/1c.txt.bz2,1
-http://n2t.net/ark:/65665/fd5ab09d12b-42bc-40f2-9557-b924d182723e,metadata/objects/NMAAHC/ff.txt.bz2,2
-nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
-https://nmaahc.si.edu/object/nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
-edanmdm-nmaahc_2016.166.17,metadata/objects/NMAAHC/ff.txt.bz2,2
-http://n2t.net/ark:/65665/fd588400c0f-66c3-4259-999d-57f112e05479,metadata/objects/NMAAHC/2b.txt.bz2,1
-nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
-https://nmaahc.si.edu/object/nmaahc_2014.263.5,metadata/objects/NMAAHC/2b.txt.bz2,1
+ebl-1554224450096-1554224455450-0,metadata/edan/nmaahc/01.txt,1
+ebl-1503511359102-1503511359173-3,metadata/edan/nmaahc/ff.txt,1
+ebl-1586784637019-1586784637080-3,metadata/edan/nmaahc/00.txt,1
+ebl-1554224450096-1554224455453-0,metadata/edan/nmaahc/c0.txt,1
+ebl-1554224450096-1554224455616-0,metadata/edan/nmaahc/01.txt,2
+ebl-1586797256118-1586797256421-2,metadata/edan/nmaahc/80.txt,1
+ebl-1586784637019-1586784637078-4,metadata/edan/nmaahc/81.txt,1
+ebl-1586797256118-1586797256344-2,metadata/edan/nmaahc/82.txt,1
+ebl-1554224450096-1554224455608-1,metadata/edan/nmaahc/c1.txt,1
+ebl-1554224450096-1554224455535-0,metadata/edan/nmaahc/02.txt,1
+ebl-1519826450657-1519826450770-2,metadata/edan/nmaahc/ff.txt,2
+ebl-1594040408251-1594040408443-1,metadata/edan/nmaahc/00.txt,2
+ebl-1554224450096-1554224455622-3,metadata/edan/nmaahc/c0.txt,2
+ebl-1554224450096-1554224455534-1,metadata/edan/nmaahc/01.txt,3
+ebl-1525728005819-1525728005875-1,metadata/edan/nmaahc/83.txt,1
+ebl-1554224450096-1554224455544-3,metadata/edan/nmaahc/80.txt,2
+ebl-1525783231307-1525783231525-0,metadata/edan/nmaahc/81.txt,2
+ebl-1588593635567-1588593635698-2,metadata/edan/nmaahc/c1.txt,2
+ebl-1586797256118-1586797256300-1,metadata/edan/nmaahc/02.txt,2
+ebl-1586797256118-1586797256406-2,metadata/edan/nmaahc/ff.txt,3
+ebl-1519826450657-1519826450821-5,metadata/edan/nmaahc/00.txt,3
 ... and so on
 ```
 
@@ -545,25 +547,33 @@ $> ./bin/findingaid -bucket-uri file:///usr/local/data/si \
 time passes...
 
 $> wc -l pandas.csv
-    4044 pandas.csv
+    23264 pandas.csv	
 
 $> less pandas.csv
 id,path,line_number
-nmah_1333041,metadata/objects/NMAH/17.txt.bz2,75
-nmah_1195220,metadata/objects/NMAH/1f.txt.bz2,520
-nmah_1065733,metadata/objects/NMAH/32.txt.bz2,393
-nmah_414524,metadata/objects/NMAH/43.txt.bz2,3302
-nmah_1298355,metadata/objects/NMAH/2a.txt.bz2,4794
-nmah_1333042,metadata/objects/NMAH/69.txt.bz2,4331
-nmah_903687,metadata/objects/NMAH/71.txt.bz2,3133
-nmah_1465552,metadata/objects/NMAH/d1.txt.bz2,137
-nmah_1449233,metadata/objects/NMAH/aa.txt.bz2,4518
-nmah_334375,metadata/objects/NMAH/bd.txt.bz2,2143
-nmah_414787,metadata/objects/NMAH/cf.txt.bz2,2140
-nmnhanthropology_8357155,metadata/objects/NMNHANTHRO/27.txt.bz2,785
-nmnhanthropology_8394769,metadata/objects/NMNHANTHRO/03.txt.bz2,1232
-nmnhanthropology_8426012,metadata/objects/NMNHANTHRO/04.txt.bz2,1441
-nmnhanthropology_8413868,metadata/objects/NMNHANTHRO/0a.txt.bz2,1447
+ebl-1503510573996-1503510574151-6,metadata/edan/aaa/49.txt,610
+ebl-1503512355391-1503512355404-5,metadata/edan/aaa/5b.txt,348
+ebl-1503512825373-1503512825482-2,metadata/edan/aaa/67.txt,444
+ebl-1503513876560-1503513876610-8,metadata/edan/aaa/c3.txt,1261
+ebl-1562776092361-1562776096447-4,metadata/edan/aag/9d.txt,27
+ebl-1537785066473-1537785075553-1,metadata/edan/acah/20.txt,326
+ebl-1505824233925-1505824234112-2,metadata/edan/acah/56.txt,447
+ebl-1543431025153-1543431025397-1,metadata/edan/acah/55.txt,2161
+ebl-1614774862593-1614774866357-2,metadata/edan/acah/62.txt,365
+ebl-1550683206232-1550683206274-0,metadata/edan/acah/9e.txt,946
+ebl-1503512575563-1503512575585-4,metadata/edan/acah/a6.txt,453
+ebl-1568040184345-1568040186378-2,metadata/edan/acah/aa.txt,651
+ebl-1505824233925-1505824234080-2,metadata/edan/acah/c2.txt,2078
+ebl-1505824233925-1505824234116-1,metadata/edan/acah/d0.txt,289
+ebl-1510071055254-1510071055423-6,metadata/edan/acah/ce.txt,1083
+ebl-1510071055254-1510071055423-5,metadata/edan/acah/d2.txt,458
+ebl-1562715031827-1562715031860-10,metadata/edan/acah/df.txt,1148
+ebl-1562715031827-1562715031860-9,metadata/edan/acah/fc.txt,46
+siris_arc_347337,metadata/edan/cfchfolklife/15.txt,49
+edanmdm-siris_arc_347337,metadata/edan/cfchfolklife/15.txt,49
+ebl-1503510195028-1503510195534-3,metadata/edan/cfchfolklife/1c.txt,191
+ebl-1539103222248-1539103222432-0,metadata/edan/cfchfolklife/4a.txt,66
+ebl-1612558900451-1612558901326-2,metadata/edan/cfchfolklife/44.txt,139
 ... and so on
 ```
 
@@ -587,24 +597,29 @@ For example:
 
 ```
 $> ./bin/emit \
-	-bucket-uri file:///usr/local/data/si/edan/nmah \
+	-bucket-uri file:///usr/local/data/si metadata/edan/nmah/ \
 
    | ./bin/location
 
-edanmdm-nmah_715051,content.freetext.place,place made,"United States: New York, New York City"
-edanmdm-nmah_580165,content.freetext.place,place made,United States
-edanmdm-nmah_598790,content.freetext.place,place made,"United Kingdom: England, Longport"
-edanmdm-nmah_580114,content.freetext.place,place made,United States: New Jersey
-edanmdm-nmah_670543,content.freetext.place,place made,United States
-edanmdm-nmah_570097,content.freetext.place,place made,United Kingdom: England
-edanmdm-nmah_415366,content.freetext.place,place made,Germany
+edanmdm-nmah_1097068,content.freetext.place,place made,United States: Connecticut
+edanmdm-nmah_737712,content.freetext.place,place made,"United States: Illinois, Chicago"
+edanmdm-nmah_322930,content.freetext.place,place made,"United States: New York, New York"
+edanmdm-nmah_322930,content.freetext.place,place family from,"United States: New Hampshire, Laconia"
+edanmdm-nmah_606951,content.freetext.place,place made,"United States: New York, New York City"
+edanmdm-nmah_607006,content.freetext.place,place made,United States
+edanmdm-nmah_737768,content.freetext.place,place made,"United States: Indiana, Indianapolis"
+edanmdm-nmah_607041,content.freetext.place,place made,United States
+edanmdm-nmah_1085323,content.freetext.place,associated place,United States
+edanmdm-nmah_554669,content.freetext.place,Associated Place,"United States: Maryland, Bethesda"
+edanmdm-nmah_1873824,content.freetext.place,place made,United States
+edanmdm-nmah_1055983,content.freetext.place,associated place,"United States: Virginia, Hayes"
+edanmdm-nmah_1331161,content.freetext.place,place made,"United States: New York, Brooklyn"
+edanmdm-nmah_682266,content.freetext.place,place made,United States
+edanmdm-nmah_1055994,content.freetext.place,associated place,"United States: Virginia, Hayes"
+edanmdm-nmah_1055994,content.freetext.place,associated place,"United States: Virginia, Hayes"
+edanmdm-nmah_1328760,content.freetext.place,Place Made,"United States: California, Cupertino"
+edanmdm-nmah_445379,content.freetext.place,place made,Brazil
 ...and so on
-edanmdm-nmah_383309,content.freetext.place,associated place,United States
-edanmdm-nmah_1957071,content.freetext.place,place made,Russia
-edanmdm-nmah_1957077,content.freetext.place,place made,Russia
-edanmdm-nmah_1957190,content.freetext.place,place made,Russia
-edanmdm-nmah_1408250,content.freetext.place,place made,"United States: District of Columbia, Washington"
-edanmdm-nmah_1321602,content.freetext.place,place made,"France: Île-de-France, Paris"
 ```
 
 The column in the CSV output are:

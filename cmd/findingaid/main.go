@@ -227,6 +227,11 @@ func main() {
 
 	uris := flag.Args()
 
+	filter_func := func(ctx context.Context, uri string) bool {
+		// Skip things like index.txt' or errant 'fileblob*' records
+		return openaccess.IsMetaDataFile(uri)
+	}
+
 	for _, uri := range uris {
 
 		opts := &walk.WalkOptions{
@@ -235,6 +240,7 @@ func main() {
 			FormatJSON:   false,
 			ValidateJSON: false,
 			Callback:     cb,
+			Filter:       filter_func,
 		}
 
 		if len(queries) > 0 {

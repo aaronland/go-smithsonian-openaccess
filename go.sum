@@ -112,6 +112,10 @@ github.com/aaronland/go-jsonl v0.0.11 h1:IrYEnf0r9doRPVr8EnDeY02MkrCoAXLyjSsbp2P
 github.com/aaronland/go-jsonl v0.0.11/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
 github.com/aaronland/go-jsonl v0.0.12 h1:DvQUj1tfe/OuuRuwnczbXmNM7slIR+vwJJul3A2ngQI=
 github.com/aaronland/go-jsonl v0.0.12/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
+github.com/aaronland/go-jsonl v0.0.13 h1:4a4JCozjPTe3epW9JsRfOHzkLHXxsWp6gTLwDFPaEHI=
+github.com/aaronland/go-jsonl v0.0.13/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
+github.com/aaronland/go-jsonl v0.0.14 h1:k6wqo7VP8IHLZlInyRqUIEMN8uhbgtnHo1YOD0j32Bk=
+github.com/aaronland/go-jsonl v0.0.14/go.mod h1:rdivd2a0GkVAPrGgUqfPewtkUASsdhXPrsrj/OwZvRU=
 github.com/aaronland/go-wunderkammer v0.0.9 h1:QXDdpnc8UAn6p+RclE8oqJrF4NbD4onIaamMJLWPMdc=
 github.com/aaronland/go-wunderkammer v0.0.9/go.mod h1:VKB7xaktV/NJchKWbbJyByfmUm9dTyOEJNO3WXsBnDA=
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=

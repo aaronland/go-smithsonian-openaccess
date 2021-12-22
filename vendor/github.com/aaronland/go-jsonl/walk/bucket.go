@@ -84,6 +84,10 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 				continue
 			}
 
+			if obj.Size == 0 {
+				continue
+			}
+
 			if opts.Filter != nil {
 
 				if !opts.Filter(ctx, obj.Key) {

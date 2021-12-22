@@ -194,12 +194,7 @@ func main() {
 
 	filter_func := func(ctx context.Context, uri string) bool {
 		// Skip things like index.txt' or errant 'fileblob*' records
-
-		if !openaccess.IsMetaDataFile(uri) {
-			return false
-		}
-
-		return true
+		return openaccess.IsMetaDataFile(uri)
 	}
 
 	for _, uri := range uris {
