@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
+	"flag"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
 	_ "gocloud.dev/blob/s3blob"
-	"flag"
-	"log"
 	"io"
+	"log"
+	"path/filepath"
+	"regexp"
 )
 
 func main() {
@@ -18,13 +20,19 @@ func main() {
 
 	ctx := context.Background()
 
-	ctx, bucket, err := openaccess.OpenBucket(ctx, *bucket_uri)
+	ctx, bucket, err := openaccess.OpenMetadataBucket(ctx, *bucket_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to open bucket, %v", err)
 	}
 
 	defer bucket.Close()
+
+	re_datafile, err := regexp.Compile(`[a-f0-9]{2}\.txt`)
+
+	if err != nil {
+		log.Fatalf("Failed to compile data file regular expression, %v", err)
+	}
 
 	var list func(context.Context, *blob.Bucket, string) error
 
@@ -59,6 +67,12 @@ func main() {
 				continue
 			}
 
+			fname := filepath.Base(path)
+
+			if !re_datafile.MatchString(fname) {
+				continue
+			}
+
 			log.Println("WALK", path)
 		}
 
@@ -70,5 +84,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to list '%s', %v", *bucket_uri, err)
 	}
-	
+
 }

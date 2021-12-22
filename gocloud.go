@@ -20,8 +20,6 @@ const IS_SMITHSONIAN_S3 string = "github.com/aaronland/go-smithsonian-openaccess
 
 func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket, error) {
 
-	// TO DO: prefix
-	
 	u, err := url.Parse(uri)
 
 	if err != nil {
@@ -60,7 +58,7 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 		}
 
 		// PREFIX GOES HERE
-		
+
 		b, err := s3blob.OpenBucket(ctx, sess, AWS_S3_BUCKET, nil)
 
 		if err != nil {
@@ -81,5 +79,17 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 	}
 
 	ctx = context.WithValue(ctx, IS_SMITHSONIAN_S3, is_smithsonian_s3)
+	return ctx, bucket, nil
+}
+
+func OpenMetadataBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket, error) {
+
+	ctx, bucket, err := OpenBucket(ctx, uri)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("Failed to open metadata bucket, %w", err)
+	}
+
+	bucket = blob.PrefixedBucket(bucket, "metadata/edan")
 	return ctx, bucket, nil
 }
