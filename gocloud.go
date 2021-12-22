@@ -20,6 +20,8 @@ const IS_SMITHSONIAN_S3 string = "github.com/aaronland/go-smithsonian-openaccess
 
 func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket, error) {
 
+	// TO DO: prefix
+	
 	u, err := url.Parse(uri)
 
 	if err != nil {
@@ -57,6 +59,8 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 			return nil, nil, err
 		}
 
+		// PREFIX GOES HERE
+		
 		b, err := s3blob.OpenBucket(ctx, sess, AWS_S3_BUCKET, nil)
 
 		if err != nil {
