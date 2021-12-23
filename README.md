@@ -12,9 +12,7 @@ This package and the tools it exports support two types of data sources for the 
 
 Access to the data on a local file system is presumed to be a clone of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) S3 bucket described on the [Smithsonian Open Access AWS Registry page](https://registry.opendata.aws/smithsonian-open-access/). A local copy of this data can be created using the `clone` tool described below.
 
-The data itself also lives in a Smithsonian-operated AWS S3 bucket so this code has been updated to retrieve data from there if asked to. For a number of reasons specific to the Smithsonian retrieving data from their S3 bucket does not fit neatly in to the `GoCloud` abstraction layer but efforts have been made to hide those details from users of this code.
-
-Most of the examples below assume a local Git checkout. For example:
+Most of the examples below assume a local clone. For example:
 
 ```
 $> ./bin/emit -bucket-uri file:///usr/local/OpenAccess metadata/edan/nmah
