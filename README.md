@@ -10,7 +10,7 @@ Documentation is incomplete.
 
 This package and the tools it exports support two types of data sources for the Smithsonian Open Access: A local file system and an AWS S3 bucket. Under the hood the code is using the GoCloud [blob](https://godoc.org/gocloud.dev/blob) abstraction layer so other [storage services](https://gocloud.dev/howto/blob/) could be supported but currently they are not.
 
-Access to the data on a local file system is presumed to be a clone of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) S3 bucket (described on the [Smithsonian Open Access AWS Registry page](https://registry.opendata.aws/smithsonian-open-access/). A local copy of this data can be created using the `clone` tool described below.
+Access to the data on a local file system is presumed to be a clone of the [OpenAccess](https://github.com/Smithsonian/OpenAccess) S3 bucket described on the [Smithsonian Open Access AWS Registry page](https://registry.opendata.aws/smithsonian-open-access/). A local copy of this data can be created using the `clone` tool described below.
 
 The data itself also lives in a Smithsonian-operated AWS S3 bucket so this code has been updated to retrieve data from there if asked to. For a number of reasons specific to the Smithsonian retrieving data from their S3 bucket does not fit neatly in to the `GoCloud` abstraction layer but efforts have been made to hide those details from users of this code.
 
