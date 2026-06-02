@@ -3,12 +3,13 @@ package clone
 import (
 	"context"
 	"fmt"
-	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/mholt/archiver/v3"
-	"gocloud.dev/blob"
 	"io"
 	"log"
 	"sync"
+
+	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/mholt/archiver/v3"
+	"gocloud.dev/blob"	
 )
 
 type CloneOptions struct {

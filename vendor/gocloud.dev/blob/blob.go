@@ -18,8 +18,10 @@
 //
 // See https://gocloud.dev/howto/blob/ for a detailed how-to guide.
 //
+// *blob.Bucket implements io/fs.FS and io/fs.SubFS, so it can be used with
+// functions in that package.
 //
-// Errors
+// # Errors
 //
 // The errors returned from this package can be inspected in several ways:
 //
@@ -29,20 +31,20 @@
 // The Bucket.ErrorAs method can retrieve the driver error underlying the returned
 // error.
 //
+// # OpenTelemetry Integration
 //
-// OpenCensus Integration
+// OpenTelemetry supports tracing, metrics, and logs collection for multiple languages and
+// backend providers. See https://opentelemetry.io.
 //
-// OpenCensus supports tracing and metric collection for multiple languages and
-// backend providers. See https://opencensus.io.
+// This API collects OpenTelemetry traces and metrics for the following methods:
+//   - Attributes
+//   - Copy
+//   - Delete
+//   - ListPage
+//   - NewRangeReader, from creation until the call to Close. (NewReader and ReadAll
+//     are included because they call NewRangeReader.)
+//   - NewWriter, from creation until the call to Close.
 //
-// This API collects OpenCensus traces and metrics for the following methods:
-//  - Attributes
-//  - Copy
-//  - Delete
-//  - ListPage
-//  - NewRangeReader, from creation until the call to Close. (NewReader and ReadAll
-//    are included because they call NewRangeReader.)
-//  - NewWriter, from creation until the call to Close.
 // All trace and metric names begin with the package import path.
 // The traces add the method name.
 // For example, "gocloud.dev/blob/Attributes".
@@ -52,13 +54,13 @@
 // For example, "gocloud.dev/blob/latency".
 //
 // It also collects the following metrics:
-//  - gocloud.dev/blob/bytes_read: the total number of bytes read, by driver.
-//  - gocloud.dev/blob/bytes_written: the total number of bytes written, by driver.
+//   - gocloud.dev/blob/bytes_read: the total number of bytes read, by driver.
+//   - gocloud.dev/blob/bytes_written: the total number of bytes written, by driver.
 //
-// To enable trace collection in your application, see "Configure Exporter" at
-// https://opencensus.io/quickstart/go/tracing.
-// To enable metric collection in your application, see "Exporting stats" at
-// https://opencensus.io/quickstart/go/metrics.
+// To enable trace collection in your application, see the documentation at
+// https://opentelemetry.io/docs/instrumentation/go/getting-started/.
+// To enable metric collection in your application, see the documentation at
+// https://opentelemetry.io/docs/instrumentation/go/manual/.
 package blob // import "gocloud.dev/blob"
 
 import (
@@ -68,7 +70,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"io/ioutil"
+	"iter"
 	"log"
 	"mime"
 	"net/http"
@@ -79,35 +81,116 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"go.opencensus.io/stats"
-	"go.opencensus.io/stats/view"
-	"go.opencensus.io/tag"
+	"go.opentelemetry.io/otel/metric"
 	"gocloud.dev/blob/driver"
 	"gocloud.dev/gcerrors"
 	"gocloud.dev/internal/gcerr"
-	"gocloud.dev/internal/oc"
 	"gocloud.dev/internal/openurl"
+	gcdkotel "gocloud.dev/internal/otel"
 )
 
+// Ensure that Reader implements io.ReadSeekCloser.
+var _ = io.ReadSeekCloser(&Reader{})
+
 // Reader reads bytes from a blob.
-// It implements io.ReadCloser, and must be closed after
+// It implements io.ReadSeekCloser, and must be closed after
 // reads are finished.
 type Reader struct {
-	b   driver.Bucket
-	r   driver.Reader
-	key string
-	end func(error) // called at Close to finish trace and metric collection
+	b              driver.Bucket
+	r              driver.Reader
+	key            string
+	ctx            context.Context       // Used to recreate r after Seeks
+	dopts          *driver.ReaderOptions // "
+	baseOffset     int64                 // The base offset provided to NewRangeReader.
+	baseLength     int64                 // The length provided to NewRangeReader (may be negative).
+	relativeOffset int64                 // Current offset (relative to baseOffset).
+	savedOffset    int64                 // Last relativeOffset for r, saved after relativeOffset is changed in Seek, or -1 if no Seek.
+	end            func(error)           // Called at Close to finish trace and metric collection.
 	// for metric collection;
-	statsTagMutators []tag.Mutator
+	bytesReadCounter metric.Int64Counter
 	bytesRead        int
 	closed           bool
 }
 
 // Read implements io.Reader (https://golang.org/pkg/io/#Reader).
 func (r *Reader) Read(p []byte) (int, error) {
+	if r.savedOffset != -1 {
+		// We've done one or more Seeks since the last read. We may have
+		// to recreate the Reader.
+		//
+		// Note that remembering the savedOffset and lazily resetting the
+		// reader like this allows the caller to Seek, then Seek again back,
+		// to the original offset, without having to recreate the reader.
+		// We only have to recreate the reader if we actually read after a Seek.
+		// This is an important optimization because it's common to Seek
+		// to (SeekEnd, 0) and use the return value to determine the size
+		// of the data, then Seek back to (SeekStart, 0).
+		saved := r.savedOffset
+		if r.relativeOffset == saved {
+			// Nope! We're at the same place we left off.
+			r.savedOffset = -1
+		} else {
+			// Yep! We've changed the offset. Recreate the reader.
+			length := r.baseLength
+			if length >= 0 {
+				length -= r.relativeOffset
+				if length < 0 {
+					// Shouldn't happen based on checks in Seek.
+					return 0, gcerr.Newf(gcerr.Internal, nil, "blob: invalid Seek (base length %d, relative offset %d)", r.baseLength, r.relativeOffset)
+				}
+			}
+			newR, err := r.b.NewRangeReader(r.ctx, r.key, r.baseOffset+r.relativeOffset, length, r.dopts)
+			if err != nil {
+				return 0, wrapError(r.b, err, r.key)
+			}
+			_ = r.r.Close()
+			r.savedOffset = -1
+			r.r = newR
+		}
+	}
 	n, err := r.r.Read(p)
 	r.bytesRead += n
+	r.relativeOffset += int64(n)
 	return n, wrapError(r.b, err, r.key)
+}
+
+// Seek implements io.Seeker (https://golang.org/pkg/io/#Seeker).
+func (r *Reader) Seek(offset int64, whence int) (int64, error) {
+	if r.savedOffset == -1 {
+		// Save the current offset for our reader. If the Seek changes the
+		// offset, and then we try to read, we'll need to recreate the reader.
+		// See comment above in Read for why we do it lazily.
+		r.savedOffset = r.relativeOffset
+	}
+	// The maximum relative offset is the minimum of:
+	// 1. The actual size of the blob, minus our initial baseOffset.
+	// 2. The length provided to NewRangeReader (if it was non-negative).
+	maxRelativeOffset := r.Size() - r.baseOffset
+	if r.baseLength >= 0 && r.baseLength < maxRelativeOffset {
+		maxRelativeOffset = r.baseLength
+	}
+	switch whence {
+	case io.SeekStart:
+		r.relativeOffset = offset
+	case io.SeekCurrent:
+		r.relativeOffset += offset
+	case io.SeekEnd:
+		r.relativeOffset = maxRelativeOffset + offset
+	}
+	if r.relativeOffset < 0 {
+		// "Seeking to an offset before the start of the file is an error."
+		invalidOffset := r.relativeOffset
+		r.relativeOffset = 0
+		return 0, fmt.Errorf("Seek resulted in invalid offset %d, using 0", invalidOffset)
+	}
+	if r.relativeOffset > maxRelativeOffset {
+		// "Seeking to any positive offset is legal, but the behavior of subsequent
+		// I/O operations on the underlying object is implementation-dependent."
+		// We'll choose to set the offset to the EOF.
+		log.Printf("blob.Reader.Seek set an offset after EOF (base offset/length from NewRangeReader %d, %d; actual blob size %d; relative offset %d -> absolute offset %d).", r.baseOffset, r.baseLength, r.Size(), r.relativeOffset, r.baseOffset+r.relativeOffset)
+		r.relativeOffset = maxRelativeOffset
+	}
+	return r.relativeOffset, nil
 }
 
 // Close implements io.Closer (https://golang.org/pkg/io/#Closer).
@@ -116,10 +199,12 @@ func (r *Reader) Close() error {
 	err := wrapError(r.b, r.r.Close(), r.key)
 	r.end(err)
 	// Emit only on close to avoid an allocation on each call to Read().
-	stats.RecordWithTags(
-		context.Background(),
-		r.statsTagMutators,
-		bytesReadMeasure.M(int64(r.bytesRead)))
+	// Record bytes read metric with OpenTelemetry.
+	if r.bytesReadCounter != nil && r.bytesRead > 0 {
+		r.bytesReadCounter.Add(
+			r.ctx,
+			int64(r.bytesRead))
+	}
 	return err
 }
 
@@ -142,7 +227,7 @@ func (r *Reader) Size() int64 {
 // See https://gocloud.dev/concepts/as/ for background information, the "As"
 // examples in this package for examples, and the driver package
 // documentation for the specific types supported for that driver.
-func (r *Reader) As(i interface{}) bool {
+func (r *Reader) As(i any) bool {
 	return r.r.As(i)
 }
 
@@ -152,8 +237,40 @@ func (r *Reader) As(i interface{}) bool {
 //
 // It implements the io.WriterTo interface.
 func (r *Reader) WriteTo(w io.Writer) (int64, error) {
+	// If the writer has a ReaderFrom method, use it to do the copy.
+	// Don't do this for our own *Writer to avoid infinite recursion.
+	// Avoids an allocation and a copy.
+	switch w.(type) {
+	case *Writer:
+	default:
+		if rf, ok := w.(io.ReaderFrom); ok {
+			n, err := rf.ReadFrom(r)
+			return n, err
+		}
+	}
+
 	_, nw, err := readFromWriteTo(r, w)
 	return nw, err
+}
+
+// downloadAndClose is similar to WriteTo, but ensures it's the only read.
+// This pattern is more optimal for some drivers.
+func (r *Reader) downloadAndClose(w io.Writer) (err error) {
+	if r.bytesRead != 0 {
+		// Shouldn't happen.
+		return gcerr.Newf(gcerr.Internal, nil, "blob: downloadAndClose isn't the first read")
+	}
+	driverDownloader, ok := r.r.(driver.Downloader)
+	if ok {
+		err = driverDownloader.Download(w)
+	} else {
+		_, err = r.WriteTo(w)
+	}
+	cerr := r.Close()
+	if err == nil && cerr != nil {
+		err = cerr
+	}
+	return err
 }
 
 // readFromWriteTo is a helper for ReadFrom and WriteTo.
@@ -161,7 +278,9 @@ func (r *Reader) WriteTo(w io.Writer) (int64, error) {
 // It returns the number of bytes read from r and the number of bytes
 // written to w.
 func readFromWriteTo(r io.Reader, w io.Writer) (int64, int64, error) {
-	buf := make([]byte, 1024)
+	// Note: can't use io.Copy because it will try to use r.WriteTo
+	// or w.WriteTo, which is recursive in this context.
+	buf := make([]byte, 1024*1024)
 	var totalRead, totalWritten int64
 	for {
 		numRead, rerr := r.Read(buf)
@@ -221,14 +340,14 @@ type Attributes struct {
 	// ETag for the blob; see https://en.wikipedia.org/wiki/HTTP_ETag.
 	ETag string
 
-	asFunc func(interface{}) bool
+	asFunc func(any) bool
 }
 
 // As converts i to driver-specific types.
 // See https://gocloud.dev/concepts/as/ for background information, the "As"
 // examples in this package for examples, and the driver package
 // documentation for the specific types supported for that driver.
-func (a *Attributes) As(i interface{}) bool {
+func (a *Attributes) As(i any) bool {
 	if a.asFunc == nil {
 		return false
 	}
@@ -240,16 +359,18 @@ func (a *Attributes) As(i interface{}) bool {
 // It implements io.WriteCloser (https://golang.org/pkg/io/#Closer), and must be
 // closed after all writes are done.
 type Writer struct {
-	b                driver.Bucket
-	w                driver.Writer
-	key              string
-	end              func(error) // called at Close to finish trace and metric collection
-	cancel           func()      // cancels the ctx provided to NewTypedWriter if contentMD5 verification fails
-	contentMD5       []byte
-	md5hash          hash.Hash
-	statsTagMutators []tag.Mutator // for metric collection
-	bytesWritten     int
-	closed           bool
+	b          driver.Bucket
+	w          driver.Writer
+	key        string
+	end        func(err error) // called at Close to finish trace and metric collection
+	cancel     func()          // cancels the ctx provided to NewTypedWriter if contentMD5 verification fails
+	contentMD5 []byte
+	md5hash    hash.Hash
+
+	// Metric collection fields.
+	bytesWrittenCounter metric.Int64Counter
+	bytesWritten        int
+	closed              bool
 
 	// These fields are non-zero values only when w is nil (not yet created).
 	//
@@ -316,10 +437,12 @@ func (w *Writer) Close() (err error) {
 	defer func() {
 		w.end(err)
 		// Emit only on close to avoid an allocation on each call to Write().
-		stats.RecordWithTags(
-			context.Background(),
-			w.statsTagMutators,
-			bytesWrittenMeasure.M(int64(w.bytesWritten)))
+		// Record bytes written metric with OpenTelemetry.
+		if w.bytesWrittenCounter != nil && w.bytesWritten > 0 {
+			w.bytesWrittenCounter.Add(
+				w.ctx,
+				int64(w.bytesWritten))
+		}
 	}()
 	if len(w.contentMD5) > 0 {
 		// Verify the MD5 hash of what was written matches the ContentMD5 provided
@@ -373,8 +496,45 @@ func (w *Writer) write(p []byte) (int, error) {
 //
 // It implements the io.ReaderFrom interface.
 func (w *Writer) ReadFrom(r io.Reader) (int64, error) {
+	// If the reader has a WriteTo method, use it to do the copy.
+	// Don't do this for our own *Reader to avoid infinite recursion.
+	// Avoids an allocation and a copy.
+	switch r.(type) {
+	case *Reader:
+	default:
+		if wt, ok := r.(io.WriterTo); ok {
+			n, err := wt.WriteTo(w)
+			return n, err
+		}
+	}
+
 	nr, _, err := readFromWriteTo(r, w)
 	return nr, err
+}
+
+// uploadAndClose is similar to ReadFrom, but ensures it's the only write.
+// This pattern is more optimal for some drivers.
+func (w *Writer) uploadAndClose(r io.Reader) (err error) {
+	if w.bytesWritten != 0 {
+		// Shouldn't happen.
+		return gcerr.Newf(gcerr.Internal, nil, "blob: uploadAndClose must be the first write")
+	}
+	// When ContentMD5 is being checked, we can't use Upload.
+	if len(w.contentMD5) > 0 {
+		_, err = w.ReadFrom(r)
+	} else {
+		driverUploader, ok := w.w.(driver.Uploader)
+		if ok {
+			err = driverUploader.Upload(r)
+		} else {
+			_, err = w.ReadFrom(r)
+		}
+	}
+	cerr := w.Close()
+	if err == nil && cerr != nil {
+		err = cerr
+	}
+	return err
 }
 
 // ListOptions sets options for listing blobs via Bucket.List.
@@ -401,7 +561,7 @@ type ListOptions struct {
 	// the underlying service's list functionality.
 	// asFunc converts its argument to driver-specific types.
 	// See https://gocloud.dev/concepts/as/ for background information.
-	BeforeList func(asFunc func(interface{}) bool) error
+	BeforeList func(asFunc func(any) bool) error
 }
 
 // ListIterator iterates over List results.
@@ -452,6 +612,71 @@ func (i *ListIterator) Next(ctx context.Context) (*ListObject, error) {
 	return i.Next(ctx)
 }
 
+type errorState struct {
+	mu   sync.Mutex
+	done bool
+	err  error
+}
+
+func (es *errorState) Done() {
+	es.mu.Lock()
+	es.done = true
+	es.mu.Unlock()
+}
+
+func (es *errorState) Set(err error) {
+	if err != nil {
+		es.mu.Lock()
+		es.err = err
+		es.mu.Unlock()
+	}
+}
+
+func (es *errorState) Err() error {
+	es.mu.Lock()
+	defer es.mu.Unlock()
+	return es.err
+}
+
+func (es *errorState) Func() func() error {
+	return func() error {
+		es.mu.Lock()
+		defer es.mu.Unlock()
+		if !es.done {
+			panic("error function called before iteration completed")
+		}
+		return es.err
+	}
+}
+
+// All iterates over the iterator, returning a *ListObject and a download function for each entry.
+//
+// Once iteration is complete, the returned "func() error" will return any errors; a non-nil return
+// value implies that the iteration did not complete.
+// Calling this function before iteration is complete will panic.
+func (i *ListIterator) All(ctx context.Context) (iter.Seq2[*ListObject, func(io.Writer, *ReaderOptions) error], func() error) {
+	var es errorState
+	return func(yield func(*ListObject, func(io.Writer, *ReaderOptions) error) bool) {
+		defer es.Done()
+		for {
+			obj, itErr := i.Next(ctx)
+			if itErr == io.EOF {
+				return
+			}
+			if itErr != nil {
+				es.Set(itErr)
+				return
+			}
+			downloadFunc := func(w io.Writer, opts *ReaderOptions) error {
+				return i.b.Download(ctx, obj.Key, w, opts)
+			}
+			if !yield(obj, downloadFunc) {
+				return
+			}
+		}
+	}, es.Func()
+}
+
 // ListObject represents a single blob returned from List.
 type ListObject struct {
 	// Key is the key for this blob.
@@ -468,14 +693,14 @@ type ListObject struct {
 	// Fields other than Key and IsDir will not be set if IsDir is true.
 	IsDir bool
 
-	asFunc func(interface{}) bool
+	asFunc func(any) bool
 }
 
 // As converts i to driver-specific types.
 // See https://gocloud.dev/concepts/as/ for background information, the "As"
 // examples in this package for examples, and the driver package
 // documentation for the specific types supported for that driver.
-func (o *ListObject) As(i interface{}) bool {
+func (o *ListObject) As(i any) bool {
 	if o.asFunc == nil {
 		return false
 	}
@@ -487,7 +712,15 @@ func (o *ListObject) As(i interface{}) bool {
 // To create a Bucket, use constructors found in driver subpackages.
 type Bucket struct {
 	b      driver.Bucket
-	tracer *oc.Tracer
+	tracer *gcdkotel.Tracer
+
+	bytesReadCounter    metric.Int64Counter
+	bytesWrittenCounter metric.Int64Counter
+
+	// ioFSCallback is set via SetIOFSCallback, which must be
+	// called before calling various functions implementing interfaces
+	// from the io/fs package.
+	ioFSCallback func() (context.Context, *ReaderOptions)
 
 	// mu protects the closed variable.
 	// Read locks are kept to allow holding a read lock for long-running calls,
@@ -499,30 +732,15 @@ type Bucket struct {
 const pkgName = "gocloud.dev/blob"
 
 var (
-	latencyMeasure      = oc.LatencyMeasure(pkgName)
-	bytesReadMeasure    = stats.Int64(pkgName+"/bytes_read", "Total bytes read", stats.UnitBytes)
-	bytesWrittenMeasure = stats.Int64(pkgName+"/bytes_written", "Total bytes written", stats.UnitBytes)
 
-	// OpenCensusViews are predefined views for OpenCensus metrics.
-	// The views include counts and latency distributions for API method calls,
-	// and total bytes read and written.
-	// See the example at https://godoc.org/go.opencensus.io/stats/view for usage.
-	OpenCensusViews = append(
-		oc.Views(pkgName, latencyMeasure),
-		&view.View{
-			Name:        pkgName + "/bytes_read",
-			Measure:     bytesReadMeasure,
-			Description: "Sum of bytes read from the service.",
-			TagKeys:     []tag.Key{oc.ProviderKey},
-			Aggregation: view.Sum(),
-		},
-		&view.View{
-			Name:        pkgName + "/bytes_written",
-			Measure:     bytesWrittenMeasure,
-			Description: "Sum of bytes written to the service.",
-			TagKeys:     []tag.Key{oc.ProviderKey},
-			Aggregation: view.Sum(),
-		})
+	// OpenTelemetryViews are predefined views for OpenTelemetry metrics.
+	// The views include counts and latency distributions for API method calls.
+	// See the explanations at https://opentelemetry.io/docs/specs/otel/metrics/data-model/ for usage.
+	OpenTelemetryViews = append(
+		append(
+			gcdkotel.Views(pkgName),
+			gcdkotel.CounterView(pkgName, "/bytes_read", "Sum of bytes read from the service.")...),
+		gcdkotel.CounterView(pkgName, "/bytes_written", "Sum of bytes written to the service.")...)
 )
 
 // NewBucket is intended for use by drivers only. Do not use in application code.
@@ -532,13 +750,14 @@ var NewBucket = newBucket
 // End users should use subpackages to construct a *Bucket instead of this
 // function; see the package documentation for details.
 func newBucket(b driver.Bucket) *Bucket {
+	providerName := gcdkotel.ProviderName(b)
+
 	return &Bucket{
-		b: b,
-		tracer: &oc.Tracer{
-			Package:        pkgName,
-			Provider:       oc.ProviderName(b),
-			LatencyMeasure: latencyMeasure,
-		},
+		b:                   b,
+		ioFSCallback:        func() (context.Context, *ReaderOptions) { return context.Background(), nil },
+		tracer:              gcdkotel.NewTracer(pkgName, providerName),
+		bytesReadCounter:    gcdkotel.BytesMeasure(pkgName, providerName, "/bytes_read", "Total bytes read from blob storage"),
+		bytesWrittenCounter: gcdkotel.BytesMeasure(pkgName, providerName, "/bytes_written", "Total bytes written to blob storage"),
 	}
 }
 
@@ -546,7 +765,7 @@ func newBucket(b driver.Bucket) *Bucket {
 // See https://gocloud.dev/concepts/as/ for background information, the "As"
 // examples in this package for examples, and the driver package
 // documentation for the specific types supported for that driver.
-func (b *Bucket) As(i interface{}) bool {
+func (b *Bucket) As(i any) bool {
 	if i == nil {
 		return false
 	}
@@ -557,12 +776,14 @@ func (b *Bucket) As(i interface{}) bool {
 // ErrorAs panics if i is nil or not a pointer.
 // ErrorAs returns false if err == nil.
 // See https://gocloud.dev/concepts/as/ for background information.
-func (b *Bucket) ErrorAs(err error, i interface{}) bool {
+func (b *Bucket) ErrorAs(err error, i any) bool {
 	return gcerr.ErrorAs(err, i, b.b.ErrorAs)
 }
 
 // ReadAll is a shortcut for creating a Reader via NewReader with nil
 // ReaderOptions, and reading the entire blob.
+//
+// Using Download may be more efficient.
 func (b *Bucket) ReadAll(ctx context.Context, key string) (_ []byte, err error) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
@@ -573,8 +794,22 @@ func (b *Bucket) ReadAll(ctx context.Context, key string) (_ []byte, err error) 
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
-	return ioutil.ReadAll(r)
+	defer func() { _ = r.Close() }()
+	return io.ReadAll(r)
+}
+
+// Download writes the content of a blob into an io.Writer w.
+func (b *Bucket) Download(ctx context.Context, key string, w io.Writer, opts *ReaderOptions) error {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	if b.closed {
+		return errClosed
+	}
+	r, err := b.NewReader(ctx, key, opts)
+	if err != nil {
+		return err
+	}
+	return r.downloadAndClose(w)
 }
 
 // List returns a ListIterator that can be used to iterate over blobs in a
@@ -650,8 +885,8 @@ func (b *Bucket) ListPage(ctx context.Context, pageToken []byte, pageSize int, o
 		return nil, nil, errClosed
 	}
 
-	ctx = b.tracer.Start(ctx, "ListPage")
-	defer func() { b.tracer.End(ctx, err) }()
+	ctx, span := b.tracer.Start(ctx, "ListPage")
+	defer func() { b.tracer.End(ctx, span, err) }()
 
 	dopts := &driver.ListOptions{
 		Prefix:     opts.Prefix,
@@ -734,8 +969,8 @@ func (b *Bucket) Attributes(ctx context.Context, key string) (_ *Attributes, err
 	if b.closed {
 		return nil, errClosed
 	}
-	ctx = b.tracer.Start(ctx, "Attributes")
-	defer func() { b.tracer.End(ctx, err) }()
+	ctx, span := b.tracer.Start(ctx, "Attributes")
+	defer func() { b.tracer.End(ctx, span, err) }()
 
 	a, err := b.b.Attributes(ctx, key)
 	if err != nil {
@@ -776,6 +1011,11 @@ func (b *Bucket) NewReader(ctx context.Context, key string, opts *ReaderOptions)
 // It reads at most length bytes starting at offset (>= 0).
 // If length is negative, it will read till the end of the blob.
 //
+// For the purposes of Seek, the returned Reader will start at offset and
+// end at the minimum of the actual end of the blob or (if length > 0) offset + length.
+//
+// Note that ctx is used for all reads performed during the lifetime of the reader.
+//
 // If the blob does not exist, NewRangeReader returns an error for which
 // gcerrors.Code will return gcerrors.NotFound. Exists is a lighter-weight way
 // to check for existence.
@@ -805,25 +1045,31 @@ func (b *Bucket) newRangeReader(ctx context.Context, key string, offset, length 
 	dopts := &driver.ReaderOptions{
 		BeforeRead: opts.BeforeRead,
 	}
-	tctx := b.tracer.Start(ctx, "NewRangeReader")
+	ctx, span := b.tracer.Start(ctx, "NewRangeReader")
 	defer func() {
-		// If err == nil, we handed the end closure off to the returned *Writer; it
-		// will be called when the Writer is Closed.
+		// If err == nil, we handed the end closure off to the returned *Reader; it
+		// will be called when the Reader is Closed.
 		if err != nil {
-			b.tracer.End(tctx, err)
+			b.tracer.End(ctx, span, err)
 		}
 	}()
-	dr, err := b.b.NewRangeReader(ctx, key, offset, length, dopts)
+	var dr driver.Reader
+	dr, err = b.b.NewRangeReader(ctx, key, offset, length, dopts)
 	if err != nil {
 		return nil, wrapError(b.b, err, key)
 	}
-	end := func(err error) { b.tracer.End(tctx, err) }
+	end := func(err error) { b.tracer.End(ctx, span, err) }
 	r := &Reader{
 		b:                b.b,
 		r:                dr,
 		key:              key,
+		ctx:              ctx,
+		dopts:            dopts,
+		baseOffset:       offset,
+		baseLength:       length,
+		savedOffset:      -1,
 		end:              end,
-		statsTagMutators: []tag.Mutator{tag.Upsert(oc.ProviderKey, b.tracer.Provider)},
+		bytesReadCounter: b.bytesReadCounter,
 	}
 	_, file, lineno, ok := runtime.Caller(2)
 	runtime.SetFinalizer(r, func(r *Reader) {
@@ -842,6 +1088,8 @@ func (b *Bucket) newRangeReader(ctx context.Context, key string, offset, length 
 //
 // If opts.ContentMD5 is not set, WriteAll will compute the MD5 of p and use it
 // as the ContentMD5 option for the Writer it creates.
+//
+// Using Upload may be more efficient.
 func (b *Bucket) WriteAll(ctx context.Context, key string, p []byte, opts *WriterOptions) (err error) {
 	realOpts := new(WriterOptions)
 	if opts != nil {
@@ -860,6 +1108,20 @@ func (b *Bucket) WriteAll(ctx context.Context, key string, p []byte, opts *Write
 		return err
 	}
 	return w.Close()
+}
+
+// Upload reads from an io.Reader r and writes into a blob.
+//
+// opts.ContentType is required.
+func (b *Bucket) Upload(ctx context.Context, key string, r io.Reader, opts *WriterOptions) error {
+	if opts == nil || opts.ContentType == "" {
+		return gcerr.Newf(gcerr.InvalidArgument, nil, "blob: Upload requires WriterOptions.ContentType")
+	}
+	w, err := b.NewWriter(ctx, key, opts)
+	if err != nil {
+		return err
+	}
+	return w.uploadAndClose(r)
 }
 
 // NewWriter returns a Writer that writes to the blob stored at key.
@@ -885,13 +1147,16 @@ func (b *Bucket) NewWriter(ctx context.Context, key string, opts *WriterOptions)
 		opts = &WriterOptions{}
 	}
 	dopts := &driver.WriterOptions{
-		CacheControl:       opts.CacheControl,
-		ContentDisposition: opts.ContentDisposition,
-		ContentEncoding:    opts.ContentEncoding,
-		ContentLanguage:    opts.ContentLanguage,
-		ContentMD5:         opts.ContentMD5,
-		BufferSize:         opts.BufferSize,
-		BeforeWrite:        opts.BeforeWrite,
+		CacheControl:                opts.CacheControl,
+		ContentDisposition:          opts.ContentDisposition,
+		ContentEncoding:             opts.ContentEncoding,
+		ContentLanguage:             opts.ContentLanguage,
+		ContentMD5:                  opts.ContentMD5,
+		BufferSize:                  opts.BufferSize,
+		MaxConcurrency:              opts.MaxConcurrency,
+		BeforeWrite:                 opts.BeforeWrite,
+		DisableContentTypeDetection: opts.DisableContentTypeDetection,
+		IfNotExist:                  opts.IfNotExist,
 	}
 	if len(opts.Metadata) > 0 {
 		// Services are inconsistent, but at least some treat keys
@@ -922,8 +1187,8 @@ func (b *Bucket) NewWriter(ctx context.Context, key string, opts *WriterOptions)
 		return nil, errClosed
 	}
 	ctx, cancel := context.WithCancel(ctx)
-	tctx := b.tracer.Start(ctx, "NewWriter")
-	end := func(err error) { b.tracer.End(tctx, err) }
+	ctx, span := b.tracer.Start(ctx, "NewWriter")
+	end := func(err error) { b.tracer.End(ctx, span, err) }
 	defer func() {
 		if err != nil {
 			end(err)
@@ -931,21 +1196,24 @@ func (b *Bucket) NewWriter(ctx context.Context, key string, opts *WriterOptions)
 	}()
 
 	w := &Writer{
-		b:                b.b,
-		end:              end,
-		cancel:           cancel,
-		key:              key,
-		contentMD5:       opts.ContentMD5,
-		md5hash:          md5.New(),
-		statsTagMutators: []tag.Mutator{tag.Upsert(oc.ProviderKey, b.tracer.Provider)},
+		b:                   b.b,
+		end:                 end,
+		cancel:              cancel,
+		key:                 key,
+		contentMD5:          opts.ContentMD5,
+		md5hash:             md5.New(),
+		bytesWrittenCounter: b.bytesWrittenCounter,
 	}
-	if opts.ContentType != "" {
-		t, p, err := mime.ParseMediaType(opts.ContentType)
-		if err != nil {
-			cancel()
-			return nil, err
+	if opts.ContentType != "" || opts.DisableContentTypeDetection {
+		var ct string
+		if opts.ContentType != "" {
+			t, p, err := mime.ParseMediaType(opts.ContentType)
+			if err != nil {
+				cancel()
+				return nil, err
+			}
+			ct = mime.FormatMediaType(t, p)
 		}
-		ct := mime.FormatMediaType(t, p)
 		dw, err := b.b.NewTypedWriter(ctx, key, ct, dopts)
 		if err != nil {
 			cancel()
@@ -997,8 +1265,8 @@ func (b *Bucket) Copy(ctx context.Context, dstKey, srcKey string, opts *CopyOpti
 	if b.closed {
 		return errClosed
 	}
-	ctx = b.tracer.Start(ctx, "Copy")
-	defer func() { b.tracer.End(ctx, err) }()
+	ctx, span := b.tracer.Start(ctx, "Copy")
+	defer func() { b.tracer.End(ctx, span, err) }()
 	return wrapError(b.b, b.b.Copy(ctx, dstKey, srcKey, dopts), fmt.Sprintf("%s -> %s", srcKey, dstKey))
 }
 
@@ -1015,13 +1283,13 @@ func (b *Bucket) Delete(ctx context.Context, key string) (err error) {
 	if b.closed {
 		return errClosed
 	}
-	ctx = b.tracer.Start(ctx, "Delete")
-	defer func() { b.tracer.End(ctx, err) }()
+	ctx, span := b.tracer.Start(ctx, "Delete")
+	defer func() { b.tracer.End(ctx, span, err) }()
 	return wrapError(b.b, b.b.Delete(ctx, key), key)
 }
 
-// SignedURL returns a URL that can be used to GET the blob for the duration
-// specified in opts.Expiry.
+// SignedURL returns a URL that can be used to GET (default), PUT or DELETE
+// the blob for the duration specified in opts.Expiry.
 //
 // A nil SignedURLOptions is treated the same as the zero value.
 //
@@ -1067,8 +1335,8 @@ func (b *Bucket) SignedURL(ctx context.Context, key string, opts *SignedURLOptio
 	if b.closed {
 		return "", errClosed
 	}
-	url, err := b.b.SignedURL(ctx, key, dopts)
-	return url, wrapError(b.b, err, key)
+	sURL, err := b.b.SignedURL(ctx, key, dopts)
+	return sURL, wrapError(b.b, err, key)
 }
 
 // Close releases any resources used for the bucket.
@@ -1121,18 +1389,21 @@ type SignedURLOptions struct {
 	// the underlying service's sign functionality.
 	// asFunc converts its argument to driver-specific types.
 	// See https://gocloud.dev/concepts/as/ for background information.
-	BeforeSign func(asFunc func(interface{}) bool) error
+	BeforeSign func(asFunc func(any) bool) error
 }
 
 // ReaderOptions sets options for NewReader and NewRangeReader.
 type ReaderOptions struct {
-	// BeforeRead is a callback that will be called exactly once, before
+	// BeforeRead is a callback that will be called before
 	// any data is read (unless NewReader returns an error before then, in which
 	// case it may not be called at all).
 	//
+	// Calling Seek may reset the underlying reader, and result in BeforeRead
+	// getting called again with a different underlying provider-specific reader..
+	//
 	// asFunc converts its argument to driver-specific types.
 	// See https://gocloud.dev/concepts/as/ for background information.
-	BeforeRead func(asFunc func(interface{}) bool) error
+	BeforeRead func(asFunc func(any) bool) error
 }
 
 // WriterOptions sets options for NewWriter.
@@ -1148,6 +1419,13 @@ type WriterOptions struct {
 	// If the Writer is used to do many small writes concurrently, using a
 	// smaller BufferSize may reduce memory usage.
 	BufferSize int
+
+	// MaxConcurrency changes the default concurrency for parts of an upload.
+	//
+	// This option may be ignored by some drivers.
+	//
+	// If 0, the driver will choose a reasonable default.
+	MaxConcurrency int
 
 	// CacheControl specifies caching attributes that services may use
 	// when serving the blob.
@@ -1170,8 +1448,17 @@ type WriterOptions struct {
 	// ContentType specifies the MIME type of the blob being written. If not set,
 	// it will be inferred from the content using the algorithm described at
 	// http://mimesniff.spec.whatwg.org/.
+	// Set DisableContentTypeDetection to true to disable the above and force
+	// the ContentType to stay empty.
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
 	ContentType string
+
+	// When true, if ContentType is the empty string, it will stay the empty
+	// string rather than being inferred from the content.
+	// Note that while the blob will be written with an empty string ContentType,
+	// most providers will fill one in during reads, so don't expect an empty
+	// ContentType if you read the blob back.
+	DisableContentTypeDetection bool
 
 	// ContentMD5 is used as a message integrity check.
 	// If len(ContentMD5) > 0, the MD5 hash of the bytes written must match
@@ -1193,7 +1480,14 @@ type WriterOptions struct {
 	//
 	// asFunc converts its argument to driver-specific types.
 	// See https://gocloud.dev/concepts/as/ for background information.
-	BeforeWrite func(asFunc func(interface{}) bool) error
+	BeforeWrite func(asFunc func(any) bool) error
+
+	// IfNotExist is used for conditional writes. When set to 'true',
+	// if a blob exists for the same key in the bucket, the write
+	// operation won't succeed and the current blob for the key will
+	// be left untouched. An error for which gcerrors.Code will return
+	// gcerrors.PreconditionFailed will be returned by Write or Close.
+	IfNotExist bool
 }
 
 // CopyOptions sets options for Copy.
@@ -1203,7 +1497,7 @@ type CopyOptions struct {
 	//
 	// asFunc converts its argument to driver-specific types.
 	// See https://gocloud.dev/concepts/as/ for background information.
-	BeforeCopy func(asFunc func(interface{}) bool) error
+	BeforeCopy func(asFunc func(any) bool) error
 }
 
 // BucketURLOpener represents types that can open buckets based on a URL.
@@ -1259,11 +1553,13 @@ func (mux *URLMux) OpenBucketURL(ctx context.Context, u *url.URL) (*Bucket, erro
 
 func applyPrefixParam(ctx context.Context, opener BucketURLOpener, u *url.URL) (*Bucket, error) {
 	prefix := u.Query().Get("prefix")
-	if prefix != "" {
-		// Make a copy of u with the "prefix" parameter removed.
+	singleKey := u.Query().Get("key")
+	if prefix != "" || singleKey != "" {
+		// Make a copy of u with the "prefix" and "key" parameters removed.
 		urlCopy := *u
 		q := urlCopy.Query()
 		q.Del("prefix")
+		q.Del("key")
 		urlCopy.RawQuery = q.Encode()
 		u = &urlCopy
 	}
@@ -1273,6 +1569,9 @@ func applyPrefixParam(ctx context.Context, opener BucketURLOpener, u *url.URL) (
 	}
 	if prefix != "" {
 		bucket = PrefixedBucket(bucket, prefix)
+	}
+	if singleKey != "" {
+		bucket = SingleKeyBucket(bucket, singleKey)
 	}
 	return bucket, nil
 }
@@ -1296,7 +1595,9 @@ func DefaultURLMux() *URLMux {
 // the following query parameters:
 //
 //   - prefix: wraps the resulting Bucket using PrefixedBucket with the
-//             given prefix.
+//     given prefix.
+//   - key: wraps the resulting Bucket using SingleKeyBucket with the
+//     given key.
 func OpenBucket(ctx context.Context, urlstr string) (*Bucket, error) {
 	return defaultURLMux.OpenBucket(ctx, urlstr)
 }
@@ -1331,4 +1632,16 @@ func PrefixedBucket(bucket *Bucket, prefix string) *Bucket {
 	defer bucket.mu.Unlock()
 	bucket.closed = true
 	return NewBucket(driver.NewPrefixedBucket(bucket.b, prefix))
+}
+
+// SingleKeyBucket returns a *Bucket based on b that always references singleKey.
+// List methods will not work.
+// singleKey acts as srcKey for Copy.
+//
+// bucket will be closed and no longer usable after this function returns.
+func SingleKeyBucket(bucket *Bucket, singleKey string) *Bucket {
+	bucket.mu.Lock()
+	defer bucket.mu.Unlock()
+	bucket.closed = true
+	return NewBucket(driver.NewSingleKeyBucket(bucket.b, singleKey))
 }

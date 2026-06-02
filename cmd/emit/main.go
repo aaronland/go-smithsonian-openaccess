@@ -6,13 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-json-query"
-	jw "github.com/aaronland/go-jsonl/walk"
-	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/aaronland/go-smithsonian-openaccess/oembed"
-	"github.com/aaronland/go-smithsonian-openaccess/walk"
-	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +14,15 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/s3blob"	
+	
+	"github.com/aaronland/go-json-query"
+	jw "github.com/aaronland/go-jsonl/walk"
+	"github.com/aaronland/go-smithsonian-openaccess"
+	// "github.com/aaronland/go-smithsonian-openaccess/oembed"
+	"github.com/aaronland/go-smithsonian-openaccess/walk"
 )
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 	validate_json := flag.Bool("validate-json", false, "Ensure each record is valid JSON.")
 	format_json := flag.Bool("format-json", false, "Format JSON output for each record.")
 
-	as_oembed := flag.Bool("oembed", false, "Emit results as OEmbed records")
+	// as_oembed := flag.Bool("oembed", false, "Emit results as OEmbed records")
 
 	validate_edan := flag.Bool("validate-edan", false, "Ensure each record is a valid EDAN document.")
 
@@ -146,7 +148,7 @@ func main() {
 		records := make([][]byte, 0)
 		var object *openaccess.OpenAccessRecord
 
-		if *validate_edan || *as_oembed {
+		if *validate_edan  {
 
 			err = json.Unmarshal(rec.Body, &object)
 
@@ -155,29 +157,7 @@ func main() {
 				return err
 			}
 
-			if *as_oembed {
-
-				oembed_records, err := oembed.OEmbedRecordsFromOpenAccessRecord(object)
-
-				if err != nil {
-					// log.Printf("Unable to construct oembed records from object '%s': %v\n", object.Id, err)
-					return nil
-				}
-
-				for _, o_rec := range oembed_records {
-
-					body, err := json.Marshal(o_rec)
-
-					if err != nil {
-						return err
-					}
-
-					records = append(records, body)
-				}
-
-			} else {
-				records = append(records, rec.Body)
-			}
+			records = append(records, rec.Body)
 
 		} else {
 			records = append(records, rec.Body)

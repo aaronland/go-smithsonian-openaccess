@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/aaronland/go-smithsonian-openaccess"
-	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"
 	"io"
 	"log"
+
+	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/s3blob"	
+	
+	"github.com/aaronland/go-smithsonian-openaccess"
+	"gocloud.dev/blob"
 )
 
 func main() {

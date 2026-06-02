@@ -2,11 +2,12 @@ package walk
 
 import (
 	"context"
+	_ "log"
+
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
-	_ "log"
 )
 
 type WalkOptions struct {

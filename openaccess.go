@@ -1,8 +1,9 @@
 package openaccess
 
 import (
-	"github.com/aaronland/go-smithsonian-openaccess/edan"
 	"strings"
+
+	"github.com/aaronland/go-smithsonian-openaccess/edan"	
 )
 
 const SCREEN_IMAGE string = "Screen Image"

@@ -2,152 +2,47 @@ package walk
 
 import (
 	"context"
+	"iter"
+
+	gc_walk "github.com/aaronland/gocloud/blob/walk"
 	"gocloud.dev/blob"
-	"io"
-	_ "log"
-	"strings"
-	"sync"
 )
 
-func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) error {
+func IterateBucket(ctx context.Context, iter_opts *IterateOptions, bucket *blob.Bucket) iter.Seq2[*WalkRecord, error] {
 
-	error_ch := opts.ErrorChannel
+	return func(yield func(*WalkRecord, error) bool) {
 
-	workers := opts.Workers
+		walk_cb := func(ctx context.Context, obj *blob.ListObject) error {
 
-	throttle := make(chan bool, workers)
+			if iter_opts.Filter != nil {
 
-	for i := 0; i < workers; i++ {
-		throttle <- true
-	}
-
-	wg := new(sync.WaitGroup)
-
-	var walkFunc func(context.Context, *blob.Bucket, string) error
-
-	walkFunc = func(ctx context.Context, bucket *blob.Bucket, prefix string) error {
-
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
-			// pass
-		}
-
-		iter := bucket.List(&blob.ListOptions{
-			Delimiter: "/",
-			Prefix:    prefix,
-		})
-
-		for {
-
-			select {
-			case <-ctx.Done():
-				break
-			default:
-				// pass
+				if !iter_opts.Filter(ctx, obj.Key) {
+					return nil
+				}
 			}
 
-			obj, err := iter.Next(ctx)
-
-			if err == io.EOF {
-				break
-			}
+			r, err := bucket.NewReader(ctx, obj.Key, nil)
 
 			if err != nil {
-
-				e := &WalkError{
-					Path:       prefix,
-					LineNumber: 0,
-					Err:        err,
-				}
-
-				error_ch <- e
-				return nil
+				return err
 			}
 
-			if obj.IsDir {
+			defer r.Close()
 
-				err = walkFunc(ctx, bucket, obj.Key)
+			for rec, err := range IterateReader(ctx, iter_opts, r) {
 
-				if err != nil {
-
-					e := &WalkError{
-						Path:       obj.Key,
-						LineNumber: 0,
-						Err:        err,
-					}
-
-					error_ch <- e
-				}
-
-				continue
-			}
-
-			if obj.Size == 0 {
-				continue
-			}
-
-			if opts.Filter != nil {
-
-				if !opts.Filter(ctx, obj.Key) {
-					continue
+				if !yield(rec, err) {
+					break
 				}
 			}
 
-			// parse file of line-demilited records
-
-			// trailing slashes confuse Go Cloud...
-
-			path := strings.TrimRight(obj.Key, "/")
-
-			go func(path string) {
-
-				// log.Println("WAIT", path)
-				<-throttle
-
-				wg.Add(1)
-
-				defer func() {
-					// log.Println("CLOSE", path)
-					wg.Done()
-					throttle <- true
-				}()
-
-				fh, err := bucket.NewReader(ctx, path, nil)
-
-				if err != nil {
-
-					e := &WalkError{
-						Path:       path,
-						LineNumber: 0,
-						Err:        err,
-					}
-
-					error_ch <- e
-					return
-				}
-
-				defer fh.Close()
-
-				opts.IsBzip = true
-
-				if !strings.HasSuffix(path, ".bz2") {
-					opts.IsBzip = false
-				}
-
-				ctx := context.WithValue(ctx, CONTEXT_PATH, path)
-
-				WalkReader(ctx, opts, fh)
-
-			}(path)
+			return nil
 		}
 
-		return nil
+		err := gc_walk.WalkBucket(ctx, bucket, walk_cb)
+
+		if err != nil {
+			yield(nil, err)
+		}
 	}
-
-	walkFunc(ctx, bucket, opts.URI)
-	wg.Wait()
-
-	return nil
 }

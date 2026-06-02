@@ -3,13 +3,12 @@ package openaccess
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"gocloud.dev/blob"
-	"gocloud.dev/blob/s3blob"
 	_ "log"
 	"net/url"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"gocloud.dev/blob"
+	"gocloud.dev/blob/s3blob"	
 )
 
 const IS_SMITHSONIAN_S3 string = "github.com/aaronland/go-smithsonian-openaccess#is_smithsonian_s3"

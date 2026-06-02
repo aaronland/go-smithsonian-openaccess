@@ -8,12 +8,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-smithsonian-openaccess"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/aaronland/go-smithsonian-openaccess"	
 )
 
 func main() {
