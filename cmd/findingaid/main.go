@@ -28,7 +28,6 @@ import (
 func main() {
 
 	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
-	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
 
 	to_stdout := flag.Bool("stdout", true, "Emit to STDOUT")
 	to_devnull := flag.Bool("null", false, "Emit to /dev/null")
@@ -240,7 +239,6 @@ func main() {
 		b := blob.PrefixedBucket(bucket, uri)
 		
 		opts := &walk.WalkOptions{
-			Workers:      *workers,
 			FormatJSON:   false,
 			ValidateJSON: false,
 			Callback:     cb,
