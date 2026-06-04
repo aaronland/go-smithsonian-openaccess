@@ -155,8 +155,6 @@ Options:
     	Ensure each record is a valid EDAN document.
   -validate-json
     	Ensure each record is valid JSON.
-  -workers int
-    	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
 ```
 
 For example, processing every record in the OpenAccess dataset ensuring it is valid JSON and emitting it to `/dev/null`:
@@ -167,7 +165,6 @@ $> ./bin/emit -bucket-uri file:///usr/local/data/si \
   -validate-json \  		
   -null \
   -stats \
-  -workers 20 \
   metadata/edan/cfchfolklife
 
 2021/12/22 14:52:57 Processed 59410 records in 5.713120297s

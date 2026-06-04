@@ -2,8 +2,7 @@ package walk
 
 import (
 	"context"
-	_ "log"
-
+	
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
@@ -11,7 +10,6 @@ import (
 )
 
 type WalkOptions struct {
-	URI          string
 	Workers      int
 	ValidateJSON bool
 	FormatJSON   bool

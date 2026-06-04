@@ -21,14 +21,13 @@ import (
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
-	// "github.com/aaronland/go-smithsonian-openaccess/oembed"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
+	"gocloud.dev/blob"	
 )
 
 func main() {
 
-	bucket_uri := flag.String("bucket-uri", "", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
-	workers := flag.Int("workers", 10, "The maximum number of concurrent workers. This is used to prevent filehandle exhaustion.")
+	bucket_uri := flag.String("bucket-uri", "si://", "A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket.")
 
 	to_stdout := flag.Bool("stdout", true, "Emit to STDOUT")
 	to_devnull := flag.Bool("null", false, "Emit to /dev/null")
@@ -179,9 +178,9 @@ func main() {
 
 	for _, uri := range uris {
 
+		b := blob.PrefixedBucket(bucket, uri)
+		
 		opts := &walk.WalkOptions{
-			URI:          uri,
-			Workers:      *workers,
 			FormatJSON:   *format_json,
 			ValidateJSON: *validate_json,
 			Callback:     cb,
@@ -199,7 +198,7 @@ func main() {
 			opts.QuerySet = qs
 		}
 
-		err := walk.WalkBucket(ctx, opts, bucket)
+		err := walk.WalkBucket(ctx, opts, b)
 
 		if err != nil {
 			log.Fatalf("Failed to crawl %s, %v", uri, err)
