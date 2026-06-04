@@ -16,8 +16,8 @@ import (
 	"time"
 
 	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"	
-	
+	_ "gocloud.dev/blob/s3blob"
+
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
@@ -148,7 +148,7 @@ func main() {
 		records := make([][]byte, 0)
 		var object *openaccess.OpenAccessRecord
 
-		if *validate_edan  {
+		if *validate_edan {
 
 			err = json.Unmarshal(rec.Body, &object)
 

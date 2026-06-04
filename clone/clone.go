@@ -9,7 +9,7 @@ import (
 
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/mholt/archiver/v3"
-	"gocloud.dev/blob"	
+	"gocloud.dev/blob"
 )
 
 type CloneOptions struct {

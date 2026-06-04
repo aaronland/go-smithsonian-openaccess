@@ -7,9 +7,9 @@ package edan
 // Index Metadata ModelFor Objects
 
 type IIMObjectRecord struct {
-	DescriptiveNonRepeating IIMDescriptiveNonRepeating `json:"descriptiveNonRepeating,omitempty"`
-	FreeText                IIMFreeText                `json:"freetext,omitempty"`
-	IndexedStructured       IIMIndexedStructured       `json:"indexStructured,omitempty"`
+	DescriptiveNonRepeating IIMDescriptiveNonRepeating `json:"descriptiveNonRepeating"`
+	FreeText                IIMFreeText                `json:"freetext"`
+	IndexedStructured       IIMIndexedStructured       `json:"indexStructured"`
 }
 
 type IIMUsage struct {
@@ -21,7 +21,7 @@ type IIMMedia struct {
 	GUID      string             `json:"guid,omitempty"`
 	IDSId     string             `json:"idsId,omitempty"`
 	Thumbnail string             `json:"thumbnail,omitempty"`
-	Usage     IIMUsage           `json:"usage,omitempty"`
+	Usage     IIMUsage           `json:"usage"`
 	Resources []IIMMediaResource `json:"resources,omitempty"`
 	Type      string             `json:"type,omitempty"`
 }
@@ -44,11 +44,11 @@ type IIMContentLabel struct {
 type IIMDescriptiveNonRepeating struct {
 	DataSource    string          `json:"data_source,omitempty"`
 	GUID          string          `json:"guid,omitempty"`
-	MetadataUsage IIMUsage        `json:"metadata_usage,omitempty"`
-	OnlineMedia   IIMOnlineMedia  `json:"online_media,omitempty"`
+	MetadataUsage IIMUsage        `json:"metadata_usage"`
+	OnlineMedia   IIMOnlineMedia  `json:"online_media"`
 	RecordId      string          `json:"record_ID,omitempty"`
 	RecordLink    string          `json:"record_link,omitempty"`
-	Title         IIMContentLabel `json:"title,omitempty"`
+	Title         IIMContentLabel `json:"title"`
 	TitleSort     string          `json:"title_sort,omitempty"`
 	UnitCode      string          `json:"unit_code,omitempty"`
 }
@@ -77,7 +77,7 @@ type IIMGeoLocationLevel struct {
 }
 
 type IIMGeoLocation struct {
-	L2 IIMGeoLocationLevel `json:"L2,omitempty"`
+	L2 IIMGeoLocationLevel `json:"L2"`
 }
 
 type IIMIndexedStructured struct {

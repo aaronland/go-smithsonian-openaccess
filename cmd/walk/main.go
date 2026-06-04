@@ -7,8 +7,8 @@ import (
 	"log"
 
 	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"	
-	
+	_ "gocloud.dev/blob/s3blob"
+
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"gocloud.dev/blob"
 )

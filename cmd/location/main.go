@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/aaronland/go-smithsonian-openaccess"	
+	"github.com/aaronland/go-smithsonian-openaccess"
 )
 
 func main() {

@@ -8,8 +8,8 @@ import (
 	"os"
 
 	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"	
-	
+	_ "gocloud.dev/blob/s3blob"
+
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/clone"
 	"gocloud.dev/blob"

@@ -7,10 +7,10 @@ import (
 	"net/url"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"	
-	"github.com/aws/aws-sdk-go-v2/service/s3"	
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"gocloud.dev/blob"
-	"gocloud.dev/blob/s3blob"	
+	"gocloud.dev/blob/s3blob"
 )
 
 const IS_SMITHSONIAN_S3 string = "github.com/aaronland/go-smithsonian-openaccess#is_smithsonian_s3"
@@ -51,7 +51,7 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 
 		provider := aws.AnonymousCredentials{}
 
-		cfg, err :=  config.LoadDefaultConfig(ctx,
+		cfg, err := config.LoadDefaultConfig(ctx,
 			config.WithCredentialsProvider(provider),
 		)
 
@@ -60,7 +60,7 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 		}
 
 		client := s3.NewFromConfig(cfg)
-		
+
 		b, err := s3blob.OpenBucket(ctx, client, AWS_S3_BUCKET, nil)
 
 		if err != nil {

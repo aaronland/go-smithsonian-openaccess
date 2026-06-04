@@ -28,40 +28,24 @@ func WalkBucket(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket) err
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	cb := opts.Callback
-
-	jw_record_ch := make(chan *jw.WalkRecord)
-	jw_error_ch := make(chan *jw.WalkError)
-
-	jw_opts := &jw.WalkOptions{
-		URI:           opts.URI,
-		Workers:       opts.Workers,
-		RecordChannel: jw_record_ch,
-		ErrorChannel:  jw_error_ch,
-		FormatJSON:    opts.FormatJSON,
-		ValidateJSON:  opts.ValidateJSON,
-		QuerySet:      opts.QuerySet,
-		IsBzip:        opts.IsBzip,
-		Filter:        opts.Filter,
+	iter_opts := &jw.IterateOptions{
+		ValidateJSON: opts.ValidateJSON,
+		FormatJSON:   opts.FormatJSON,
+		IsBzip:       opts.IsBzip,
+		QuerySet:     opts.QuerySet,
+		Filter:       opts.Filter,
 	}
 
-	go func() {
+	for rec, err := range jw.IterateBucket(ctx, iter_opts, bucket) {
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case err := <-jw_error_ch:
-				cb(ctx, nil, err)
-			case rec := <-jw_record_ch:
-				cb(ctx, rec, nil)
-			default:
-				// pass
-			}
+		cb_err := opts.Callback(ctx, rec, err)
+
+		if cb_err != nil {
+			return cb_err
 		}
-	}()
+	}
 
-	return jw.WalkBucket(ctx, jw_opts, bucket)
+	return nil
 }
 
 func WalkSmithsonianRecord(ctx context.Context, opts *WalkOptions, bucket *blob.Bucket, uri string) error {
@@ -73,46 +57,29 @@ func WalkSmithsonianRecord(ctx context.Context, opts *WalkOptions, bucket *blob.
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	fh, err := bucket.NewReader(ctx, uri, nil)
+	r, err := bucket.NewReader(ctx, uri, nil)
 
 	if err != nil {
 		return err
 	}
 
-	defer fh.Close()
+	defer r.Close()
 
-	cb := opts.Callback
-
-	jw_record_ch := make(chan *jw.WalkRecord)
-	jw_error_ch := make(chan *jw.WalkError)
-
-	jw_opts := &jw.WalkOptions{
-		URI:           opts.URI,
-		Workers:       opts.Workers,
-		RecordChannel: jw_record_ch,
-		ErrorChannel:  jw_error_ch,
-		FormatJSON:    opts.FormatJSON,
-		ValidateJSON:  opts.ValidateJSON,
-		QuerySet:      opts.QuerySet,
-		IsBzip:        opts.IsBzip,
+	iter_opts := &jw.IterateOptions{
+		FormatJSON:   opts.FormatJSON,
+		ValidateJSON: opts.ValidateJSON,
+		QuerySet:     opts.QuerySet,
+		IsBzip:       opts.IsBzip,
 	}
 
-	go func() {
+	for rec, err := range jw.IterateReader(ctx, iter_opts, r) {
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case err := <-jw_error_ch:
-				cb(ctx, nil, err)
-			case rec := <-jw_record_ch:
-				cb(ctx, rec, nil)
-			default:
-				// pass
-			}
+		cb_err := opts.Callback(ctx, rec, err)
+
+		if cb_err != nil {
+			return cb_err
 		}
-	}()
+	}
 
-	jw.WalkReader(ctx, jw_opts, fh)
 	return nil
 }

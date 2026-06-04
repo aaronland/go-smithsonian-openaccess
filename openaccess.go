@@ -3,7 +3,7 @@ package openaccess
 import (
 	"strings"
 
-	"github.com/aaronland/go-smithsonian-openaccess/edan"	
+	"github.com/aaronland/go-smithsonian-openaccess/edan"
 )
 
 const SCREEN_IMAGE string = "Screen Image"
@@ -25,7 +25,7 @@ type OpenAccessRecord struct {
 	Status          int                  `json:"status"`
 	Version         string               `json:"version"`
 	PublicSearch    bool                 `json:"publicSearch"`
-	Extensions      interface{}          `json:"extensions"`
+	Extensions      any                  `json:"extensions"`
 }
 
 func (rec *OpenAccessRecord) OnlineMedia() (edan.IIMOnlineMedia, error) {
