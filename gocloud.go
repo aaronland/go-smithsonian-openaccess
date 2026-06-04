@@ -7,6 +7,8 @@ import (
 	"net/url"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"	
+	"github.com/aws/aws-sdk-go-v2/service/s3"	
 	"gocloud.dev/blob"
 	"gocloud.dev/blob/s3blob"	
 )
@@ -47,18 +49,19 @@ func OpenBucket(ctx context.Context, uri string) (context.Context, *blob.Bucket,
 
 	if is_smithsonian_s3 {
 
-		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(AWS_S3_REGION),
-			Credentials: credentials.AnonymousCredentials,
-		})
+		provider := aws.AnonymousCredentials{}
+
+		cfg, err :=  config.LoadDefaultConfig(ctx,
+			config.WithCredentialsProvider(provider),
+		)
 
 		if err != nil {
 			return nil, nil, err
 		}
 
-		// SKIPMETADATA GOES HERE
-
-		b, err := s3blob.OpenBucket(ctx, sess, AWS_S3_BUCKET, nil)
+		client := s3.NewFromConfig(cfg)
+		
+		b, err := s3blob.OpenBucket(ctx, client, AWS_S3_BUCKET, nil)
 
 		if err != nil {
 			return nil, nil, err
