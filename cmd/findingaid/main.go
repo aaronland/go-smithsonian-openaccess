@@ -22,6 +22,7 @@ import (
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
+	"gocloud.dev/blob"
 )
 
 func main() {
@@ -236,8 +237,9 @@ func main() {
 
 	for _, uri := range uris {
 
+		b := blob.PrefixedBucket(bucket, uri)
+		
 		opts := &walk.WalkOptions{
-			URI:          uri,
 			Workers:      *workers,
 			FormatJSON:   false,
 			ValidateJSON: false,
@@ -255,7 +257,7 @@ func main() {
 			opts.QuerySet = qs
 		}
 
-		err := walk.WalkBucket(ctx, opts, bucket)
+		err := walk.WalkBucket(ctx, opts, b)
 
 		if err != nil {
 			log.Fatalf("Failed to crawl %s, %v", uri, err)
