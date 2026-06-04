@@ -4,13 +4,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+
+	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/s3blob"
+
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/clone"
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
-	_ "gocloud.dev/blob/s3blob"
-	"log"
-	"os"
 )
 
 func main() {

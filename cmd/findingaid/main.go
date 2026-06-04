@@ -6,11 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-json-query"
-	jw "github.com/aaronland/go-jsonl/walk"
-	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/aaronland/go-smithsonian-openaccess/walk"
-	_ "gocloud.dev/blob/fileblob"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,6 +15,13 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	_ "gocloud.dev/blob/fileblob"
+
+	"github.com/aaronland/go-json-query"
+	jw "github.com/aaronland/go-jsonl/walk"
+	"github.com/aaronland/go-smithsonian-openaccess"
+	"github.com/aaronland/go-smithsonian-openaccess/walk"
 )
 
 func main() {
