@@ -2,7 +2,7 @@ package walk
 
 import (
 	"context"
-	
+
 	"github.com/aaronland/go-json-query"
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"

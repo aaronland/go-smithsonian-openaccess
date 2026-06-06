@@ -22,7 +22,7 @@ import (
 	jw "github.com/aaronland/go-jsonl/walk"
 	"github.com/aaronland/go-smithsonian-openaccess"
 	"github.com/aaronland/go-smithsonian-openaccess/walk"
-	"gocloud.dev/blob"	
+	"gocloud.dev/blob"
 )
 
 func main() {
@@ -179,7 +179,7 @@ func main() {
 	for _, uri := range uris {
 
 		b := blob.PrefixedBucket(bucket, uri)
-		
+
 		opts := &walk.WalkOptions{
 			FormatJSON:   *format_json,
 			ValidateJSON: *validate_json,
