@@ -60,7 +60,7 @@ This tool was written principally to clone OpenAccess data from the Smithsonian'
 ```
 $> ./bin/clone -h
 Usage:
-  ./bin/clone [options] [path1 path2 ... pathN]
+  ./bin/clone [options] path(N) path(n)
 
 Options:
   -compress
@@ -70,7 +70,9 @@ Options:
   -source-bucket-uri string
     	A valid GoCloud bucket URI. Valid schemes are: file://, s3:// and si:// which is signals that data should be retrieved from the Smithsonian's 'smithsonian-open-access' S3 bucket. (default "si://")
   -target-bucket-uri string
-    	A valid GoCloud bucket URI. Valid schemes are: file://, s3://.
+    	A valid GoCloud bucket URI. Valid schemes are: cwd:// (current working directory), file://, s3://.
+  -verbose
+    	Enable verbose (debug) logging.
   -workers int
     	The maximum number of concurrent workers. This is used to prevent filehandle exhaustion. (default 10)
 ```

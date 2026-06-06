@@ -237,7 +237,7 @@ func main() {
 	for _, uri := range uris {
 
 		b := blob.PrefixedBucket(bucket, uri)
-		
+
 		opts := &walk.WalkOptions{
 			FormatJSON:   false,
 			ValidateJSON: false,

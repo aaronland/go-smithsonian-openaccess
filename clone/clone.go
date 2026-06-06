@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"sync"
-
+	"time"
+	
 	"github.com/aaronland/go-smithsonian-openaccess"
-	"github.com/mholt/archiver/v3"
+	"github.com/mholt/archives"
 	"gocloud.dev/blob"
 )
 
@@ -120,6 +122,15 @@ func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 		//
 	}
 
+	logger := slog.Default()
+	logger = logger.With("uri", uri)
+
+	t1 := time.Now()
+
+	defer func(){
+		logger.Debug("Time to clone", "time", time.Since(t1))
+	}()
+	
 	compare_md5 := true
 
 	if opts.Force {
@@ -178,8 +189,27 @@ func cloneObject(ctx context.Context, opts *CloneOptions, source_bucket *blob.Bu
 	}
 
 	if opts.Compress {
-		arch := archiver.NewBz2()
-		err = arch.Compress(source_fh, target_fh)
+
+		wr, err := archives.Bz2{}.OpenWriter(target_fh)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(wr, source_fh)
+
+		if err != nil {
+			return err
+		}
+
+		err = wr.Close()
+
+		if err != nil {
+			return err
+		}
+
+		// arch := archiver.NewBz2()
+		// err = arch.Compress(source_fh, target_fh)
 	} else {
 		_, err = io.Copy(target_fh, source_fh)
 	}
